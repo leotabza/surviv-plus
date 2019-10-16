@@ -55,9 +55,7 @@
 		var selectableSlots = $(".customize-col, .customize-list-item");
 		// console.log(selectableSlots);
 
-		var disabledStations = ["http://frshoutcast.comunicazion.eu:8815/;", "http://hyades.shoutca.st:8043/stream", "http://54.38.214.69/;?icy=http"]
-
-		var streamStations = ["http://178.32.107.151/proxy/curveradio?mp=/stream"]
+		var streamStations = [""]
 		var randomIndex = Math.floor(Math.random() * streamStations.length);
 		var chosenStation = streamStations[randomIndex];
 
@@ -79,10 +77,14 @@
 		$(".ad-block-leaderboard-bottom").hide();
 		$("#ad-block-left").append('\
 			<div class="menu-block" style="padding: 20px; margin-top: 8px;">\
-			<h3 style="margin-top: 0px; color: #83af50;">Surviv Radio!</h3> \
-			<audio src="'+chosenStation+'" controls style="width: 200px;" id="survivRadio"></audio> \
-			<input type="range" id="volume1" min=0 max=1 step=0.01 value="1" class="slider"> \
-			</div>');
+			<h3 style="margin-top: 0px; color: #83af50;">Wii Music</h3> \
+			<div>\
+      		<iframe src="https://drive.google.com/file/d/1iO-hgTUN-Z-qGe4HRryCTaczAjNSxDFv/preview"   width="260" height="150" frameborder="0" scrolling="no" seamless=""></iframe>\
+      		<div style="width: 80px; height: 80px; position: absolute; opacity: 0; right: 0px; top: 0px;">&nbsp;</div>\
+			</div>\
+			\</div>');
+
+
 
 		$("#volume1").change(function () {
 			setVolume_1();
@@ -94,7 +96,7 @@
 
 	});
 	
-	$(document).off("mousedown");
+	// $(document).off("mousedown");
 	
 	var updateLang = function() {
 		setTimeout(updateLang, 50);
