@@ -19,7 +19,7 @@
         "activePlayer": "Ft",
         "input": "Ue",
         "keyPressed": "fe",
-        "mousePressed": "Se",
+        "mousePressed": "be",
         "mouseDown": "xe",
         "smokeBarn": false,
         "smokePool": "e",       
@@ -38,8 +38,8 @@
         "closestLoot": "ia",
         "lootPool": "At",
         "localData": "le",
-
-				"cheatVersion": "0.30.0"
+        "bulletBarn": "mt",
+							"cheatVersion": "0.30.0"
 	};
 
 	var checkVersion = function () {
@@ -138,6 +138,12 @@
 			window.gameVars.Game.GameData = getModule("989ad62a");
 
 			window.gameVars.Game.model = getModule("10899aea");
+
+			window.gameVars.Game.BulletBarn = getModule("beeed8a4");
+			window.gameVars.Game.GunBarn = getModule("ad1c4e70");
+			window.gameVars.Game.GunTypes = getModule("ccb6ad93");
+
+
 		
 			window.setInterval(function() { window.gameVars.Game.updateTeamTab = true; }, 1000);
         }
