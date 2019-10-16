@@ -88,7 +88,7 @@ window.gameFunctions.gameRender = function(){
 			targetIndicator.scale.x = 0.7;
 			targetIndicator.scale.y = 0.7;
 			targetIndicator.tint = 16711680;
-			targetIndicator.alpha = window.menu.UserSetting.look.targetIndicatorEnabled ? 0.4 : 0.0;
+			targetIndicator.alpha = window.menu.UserSetting.look.targetIndicatorEnabled ? 1.0 : 0.0;
 			player.container.addChild(targetIndicator);
 			player.targetIndicator = targetIndicator;
 		}
@@ -98,7 +98,6 @@ window.gameFunctions.gameRender = function(){
 		
 		targetIndicator.position.x = targetIndicator.width * -0.5 + player.prediction.x;
 		targetIndicator.position.y = targetIndicator.height * -0.5 + player.prediction.y;
-		
 		targetIndicator.visible = player == window.gameVars.Game.Target;
 	}
 	
