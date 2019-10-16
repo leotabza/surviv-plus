@@ -26,7 +26,7 @@ window.gameFunctions.gameOverride = function(){
 		return baseZoomFast;
 	});
 	this[obfuscate.activePlayer][obfuscate.localData].inventory.soda = 1;
-	console.log(this[obfuscate.activePlayer][obfuscate.localData].inventory);
+	// console.log(this[obfuscate.activePlayer][obfuscate.localData].inventory);
 	// INPUT
 	
 	var inpt = this[obfuscate.input];
@@ -72,8 +72,8 @@ window.gameFunctions.gameOverride = function(){
 			window.gameVars.Input.Cheat.ZoomDelta -= 1;
 		}else if(checkBind(opt.displayNames, bind)) {
 			window.gameVars.Input.Cheat.ShowNamesPressed = down;
-		// }else if(checkBind(opt.streamerMode, bind)) {
-			
+		// }else if(checkBind(opt.spinPressed, bind)) {
+		// 	window.gameVars.Input.Cheat.SpinPressed = down;
 		}else if(checkBind(opt.goUp, bind)) {
 			keyboardEvent(87, down);
 		}else if(checkBind(opt.goLeft, bind)) {
@@ -225,7 +225,7 @@ window.gameFunctions.gameOverride = function(){
 	}, false);
 	
 	// mouse
-	
+
 	var onMouseMoveBase = this[obfuscate.input].onMouseMove;
 	this[obfuscate.input].onMouseMove = function(e){
 		if(window.gameVars){
@@ -241,9 +241,10 @@ window.gameFunctions.gameOverride = function(){
 				}
 			}
 		}
+	
+	onMouseMoveBase.call(inpt, e);
+};
 		
-		onMouseMoveBase.call(inpt, e);
-	};
 	var onMouseDownBase = function(e) {
         this.mouseButton = this.mouseButton || 0 === e.button,
         this.rightMouseButton = this.rightMouseButton || 2 === e.button
