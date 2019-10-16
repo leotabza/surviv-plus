@@ -1,28 +1,33 @@
 window.gameFunctions = window.gameFunctions || {};
-window.gameFunctions.gameSendMessage = function(messageCode, messageData){
-	if(!window.gameVars)
+window.gameFunctions.gameSendMessage = function (messageCode, messageData) {
+	if (!window.gameVars)
 		return;
-	if(messageCode == 13)
+	if (messageCode == 13)
 		window.gameVars.Game.LastTimeDropItem = window.performance.now();
 }
+number = 0
+processes = []
 
-window.gameFunctions.gameSrocessGameUpdate = function(mesg){
-	
+
+positions = []
+
+window.gameFunctions.gameSrocessGameUpdate = function (mesg) {
+
 	var red = { r: 255, g: 0, b: 0 };
 	var green = { r: 0, g: 180, b: 0 };
-	
+
 	function nthroot(x, n) {
 		try {
 			var negate = n % 2 == 1 && x < 0;
-			if(negate)
+			if (negate)
 				x = -x;
 			var possible = Math.pow(x, 1 / n);
 			n = Math.pow(possible, n);
-			if(Math.abs(x - n) < 1 && (x > 0 == n > 0))
+			if (Math.abs(x - n) < 1 && (x > 0 == n > 0))
 				return negate ? -possible : possible;
-		} catch(e){}
+		} catch (e) { }
 	}
-	
+
 	function getColor(color1, color2, weight) {
 		var w1 = weight;
 		var w2 = 1 - w1;
@@ -33,122 +38,122 @@ window.gameFunctions.gameSrocessGameUpdate = function(mesg){
 		};
 		return rgb;
 	}
-	
+
 	function getWeight(value, min, max) {
 		if (value <= min) return 0;
 		if (value >= max) return 1;
 		return (value - min) / (max - min);
 	}
-	
+
 	function colorToString(color) {
 		return 'rgba(' + color.r + ', ' + color.g + ', ' + color.b + ', 1.0)';
 	}
-	
+
 	function getMean(array) {
-		return array.length > 0 ?array.reduce((acc, val) => acc + val) / array.length : 1000;
+		return array.length > 0 ? array.reduce((acc, val) => acc + val) / array.length : 1000;
 	}
-	
+
 	var perf = window.gameVars.Perfomance;
 	var LATinertia = 0.2;
 	var LATResultsCount = 5;
-	
+
 	var ping = (new Date).getTime() - this.seqSendTime;
-	
+
 	if (mesg.ack == this.seq && this.seqInFlight) {
 		this.seqInFlight = false;
 		this.pings.push(ping);
-	
+
 		while (this.pings.length > LATResultsCount) {
 			this.pings.shift();
 		}
 	}
-	
+
 	// update LAT counter
-		
+
 	var LAT = getMean(this.pings);
-	
-	if(perf.lastLAT) {
+
+	if (perf.lastLAT) {
 		LAT = LAT * (1 - LATinertia) + perf.lastLAT * LATinertia;
 	}
 
 	perf.lastLAT = LAT;
-		
+
 	var LATCol = getColor(red, green, getWeight(LAT, 10, 200));
-	
-	if(window.gameVars && window.gameVars.UI && window.gameVars.UI.LATText) {
+
+	if (window.gameVars && window.gameVars.UI && window.gameVars.UI.LATText) {
 		window.gameVars.UI.LATText.text("LAT: " + Math.round(LAT));
 		window.gameVars.UI.LATText.css('color', colorToString(LATCol));
 	}
 
 	// update LAG counter
-	
+
 	var minLag = Math.min.apply(null, this.pings);
 	var maxLag = Math.max.apply(null, this.pings);
-		
+
 	var currLag = maxLag - minLag;
-	
+
 	var LAGinertia = 0.2;
-	
+
 	var minCountingLag = 20;
 	var maxCountingLag = 100 - minCountingLag;
-	
+
 	var minCountingLatLag = 150;
 	var maxCountingLatLag = 250 - minCountingLatLag;
-	
+
 	var newDevLAG = (currLag - minCountingLag) / maxCountingLag;
 	var newLatLAG = this.seqInFlight ? (ping - minCountingLatLag) / maxCountingLatLag : 0.0;
-	
+
 	var newLAG = Math.max(newDevLAG, newLatLAG);
-	
+
 	newLAG = newLAG < 0.01 ? 0.01 : newLAG > 0.99 ? 0.99 : newLAG;
-	
+
 	newLAG = (newLAG - 0.5) * 2;
 	newLAG = nthroot(newLAG, 3);
 	newLAG = newLAG / 2 + 0.5;
-	
+
 	newLAG = newLAG < 0.1 ? 0 : newLAG > 0.9 ? 1.0 : newLAG;
-	
-	if(perf.lastLAG) {
+
+	if (perf.lastLAG) {
 		newLAG = newLAG * (1 - LAGinertia) + perf.lastLAG * LAGinertia;
 	}
-	
+
 	perf.lastLAG = newLAG;
-	
-	if(window.gameVars && window.gameVars.UI && window.gameVars.UI.LAGText)
+
+	if (window.gameVars && window.gameVars.UI && window.gameVars.UI.LAGText)
 		window.gameVars.UI.LAGText.fadeTo(0, newLAG);
 }
-	
-window.gameFunctions.gameUpdate = function(){
-	
-	if(!window.menu || !window.menu.UserSetting)
+
+window.gameFunctions.gameUpdate = function () {
+
+	if (!window.menu || !window.menu.UserSetting)
 		return;
-	
+
 	// Local functions
-	
-	var getDistance = function(p1, p2) {
+
+	var getDistance = function (p1, p2) {
 		var dx = p2.x - p1.x, dy = p2.y - p1.y;
-		return Math.sqrt( dx*dx + dy*dy );
+		return Math.sqrt(dx * dx + dy * dy);
 	};
 
-	var getDistance2 = function(x1, y1, x2, y2) {
-		return Math.sqrt(Math.pow((x1-x2), 2) + Math.pow((y1-y2), 2))
+	var getDistance2 = function (x1, y1, x2, y2) {
+		return Math.sqrt(Math.pow((x1 - x2), 2) + Math.pow((y1 - y2), 2))
 	}
 
-	var getSecondsElapsed = function(time) {
+	var getSecondsElapsed = function (time) {
 		return (window.performance.now() - time) / 1000;
 	};
 
-	var getTimeElapsed = function(time) {
+	var getTimeElapsed = function (time) {
 		return (window.performance.now() - time);
 	};
 
-	var pressButton = function(keyCode) {
+	var pressButton = function (keyCode) {
 		var keys = game.he.input.keys;
 
-		if(!keys[keyCode]) {
-			setTimeout(function() {
+		if (!keys[keyCode]) {
+			setTimeout(function () {
 				keys[keyCode] = true;
-				setTimeout(function() {
+				setTimeout(function () {
 					delete keys[keyCode];
 				}, 50);
 			}, 50);
@@ -160,8 +165,8 @@ window.gameFunctions.gameUpdate = function(){
 		Loot: 3
 	};
 
-	var detectEnimies = function() {
-		if(!game[obfuscate.playerBarn][obfuscate.playerInfo][game[obfuscate.activeId]]) return [];
+	var detectEnimies = function () {
+		if (!game[obfuscate.playerBarn][obfuscate.playerInfo][game[obfuscate.activeId]]) return [];
 		var selfId = game[obfuscate.activeId];
 		var selfTeamId = game[obfuscate.playerBarn][obfuscate.playerInfo][game[obfuscate.activeId]].teamId;
 		var objectIds = Object.keys(game[obfuscate.objectCreator].idToObj);
@@ -191,7 +196,7 @@ window.gameFunctions.gameUpdate = function(){
 		}
 		// console.log(allPlayerDict);
 		// $("#ui-game-tab-keybinds").html(allPlayerDict);
-		if(window.gameVars.Game.updateTeamTab){
+		if (window.gameVars.Game.updateTeamTab) {
 			window.gameVars.Game.updateTeamTab = false;
 
 
@@ -199,7 +204,7 @@ window.gameFunctions.gameUpdate = function(){
 			$("#ui-game-tab-keybinds").css("overflow-y", "scroll");
 			var killfeedText = $("#ui-killfeed-0 > div").html();
 			// console.log(window.deadPlayers);
-			if(killfeedText.indexOf("killed") !== -1) {
+			if (killfeedText.indexOf("killed") !== -1) {
 				let deadPlayerText = killfeedText.split("killed ")[1];
 				if (deadPlayerText) {
 					window.deadPlayers.add(deadPlayerText.split("with")[0].trim());
@@ -208,7 +213,7 @@ window.gameFunctions.gameUpdate = function(){
 
 			var allPlayersStr = "";
 			for (let team in allPlayerDict) {
-				if( allPlayerDict[team].length > 1 ) {
+				if (allPlayerDict[team].length > 1) {
 					for (let p = 0; p < allPlayerDict[team].length; p++) {
 						let thisPlayer = allPlayerDict[team][p];
 						if (window.deadPlayers.has(thisPlayer)) {
@@ -225,121 +230,147 @@ window.gameFunctions.gameUpdate = function(){
 				$("#ui-game-tab-keybinds").append(`<p><strong>TEAM ${team}:</strong> ${allPlayersStr}</p>`);
 			}
 		}
-		
-		var isTeammate = function(plrId, plrObj) {
+
+		var isTeammate = function (plrId, plrObj) {
 			var isTmmt = game[obfuscate.playerBarn][obfuscate.playerInfo][plrId].teamId == selfTeamId;
 			plrObj.teammate = isTmmt;
 			return isTmmt;
 		}
 
 		return playerIds
-			.filter(function(id) {
+			.filter(function (id) {
 				var playerObject = game[obfuscate.objectCreator].idToObj[id];
-				return playerObject && 
-				(!isTeammate(id, playerObject)) &&
-				(!playerObject[obfuscate.netData].dead) && 
-				(!playerObject[obfuscate.netData].downed) &&
-				id != selfId;})
-			.map(function(id) {
+				return playerObject &&
+					(!isTeammate(id, playerObject)) &&
+					(!playerObject[obfuscate.netData].dead) &&
+					id != selfId;
+			})
+			.map(function (id) {
 				return game[obfuscate.objectCreator].idToObj[id];
-		});
+			});
 	}
-	
+
 	var playerPosListCount = 5;
 	var playerLastRelevantTime = 0.19;
 
-	var processPlayerSpeed = function(player, inertia) {
-		if(!player)
+
+
+	var processEnemy = function (enemy) {
+		if (!enemy)
 			return;
 		
-		var curPosData = {
-			pos: player.pos,
-			time: window.performance.now(),
-		};
-		
-		if(!player.posData || getSecondsElapsed(player.posData[0].time) > playerLastRelevantTime)
-		{
-			player.posData = [curPosData];
-			player.prediction = {x:0.0, y:0.0};
-			player.speed = 0.0;
-			player.distance = 0.0;
-			player.direction = null;
-			
-			return;
-		}
-		
-		var lastPosData = player.posData[0];
-		
-		var distance = getDistance(curPosData.pos, lastPosData.pos);
-		
-		if(distance > 0.0001)
-		{
-			player.direction = {
-					x: (curPosData.pos.x - lastPosData.pos.x) / distance,
-					y: (curPosData.pos.y - lastPosData.pos.y) / distance
-				}
-		}
-		else
-		{
-			player.direction = null;
-		}
-		
-		var speed = distance / getSecondsElapsed(lastPosData.time);
-		
-		if(player.speed)
-			speed = (speed * (1.0 - inertia)) + (player.speed * inertia);
-		
-		player.speed = speed;
-		player.distance = distance;
-		player.posData.push(curPosData);
-		
-		while (player.posData.length > playerPosListCount) {
-			player.posData.shift();
-		}
-	};
+		enemy.posData = []
+		enemy.prediction = { x: 0.0, y: 0.0 };
+		enemy.speed = { x: 0.0, y: 0.0 };
+		enemy.distance = { x: 0.0, y: 0.0 };
+		enemy.direction = {x: 0,y:0};
+		timeDiff = 0.001
+		distDiffX = 0
+		distDiffY = 0
+
+		processes.unshift(
+			{
+			pos: enemy.pos,
+			time: window.performance.now()/1000
+			})
+
+		if(processes.length > 1 && processes[0].pos != processes[1].pos){
+			{
+				timeDiff = processes[0].time - processes[1].time
+				distDiffX = processes[0].pos.x - processes[1].pos.x
+				distDiffY = processes[0].pos.y - processes[1].pos.y
 	
-	var processEnemy = function(enemy) {
-		if(!enemy)
-			return;
-		
-		processPlayerSpeed(enemy, window.menu.UserSetting.shoot.autoAimSpeedInertia);
-		
-		if(!curBullet)
-		{
-			enemy.range = 0.0;
-			enemy.prediction = {x:0.0, y:0.0};
-			return;
+				// console.log('time', timeDiff)
+				// console.log('dist', distDiff)
+				// console.log(processes)	
+				processes.pop();
+			}
+	}
+		var distance = 
+		{	
+			x: distDiffX,
+			y: distDiffY
 		}
+		// console.log(distance)
+		// enemy.direction = {
+		// 	x: (enemy.posData[1].pos.x - enemy.posData[0].pos.x) / distance,
+		// 	y: (enemy.posData[1].pos.y - enemy.posData[0].pos.y) / distance		
+		// }
+		// console.log(enemy.direction)
+		var timeElapsed = timeDiff
+		var speed = 
+		{
+			x: distance.x / timeElapsed, 
+			y: distance.y / timeElapsed
+		}
+
+		// console.log('distance',distance)
+		// console.log('speed',speed)
+		// console.log('time', timeElapsed)
+
+		// speed = (speed)
+		// console.log('a', enemy.speed)
+		var predSpeed = window.menu.UserSetting.shoot.autoAimSpeedInertia
+		enemy.speed = speed
+		// console.log('b', enemy.speed)
+
+
+		enemy.distance = distance;
 		
-		var bulletReachTime = getDistance(curPlayer.pos, enemy.pos) / curBullet.speed
-		
-		if(window.menu.UserSetting.shoot.autoAimPingCorrectionEnabled)
-			bulletReachTime += window.gameVars.Perfomance.lastLAT / 2000;
-		
-		var range = bulletReachTime * enemy.speed;
-		
-		var prediction = {
+		// console.log(enemy.pos)		
+		// while (enemy.posData.length > enemyPosListCount) {
+		// 	enemy.posData.shift();
+		// }
+
+		if(curBulletSpeed == 0){
+			enemy.prediction = {
 				x: 0,
 				y: 0
 			};
-		
-		if(enemy.direction)
-		{
-			prediction = {
-				x: enemy.direction.x * range,
-				y: enemy.direction.y * range
-			}
-		}
-		
-		var predInert = window.menu.UserSetting.shoot.autoAimPredictionInertia;
-		
-		prediction.x = prediction.x * (1.0 - predInert) + enemy.prediction.x * predInert;
-		prediction.y = prediction.y * (1.0 - predInert) + enemy.prediction.y * predInert;
-		
-		enemy.prediction = prediction;
-		enemy.range = range;
-	};
+			// enemy.range = 0.0
+			// console.log('predfists', enemy.prediction)
+			return;
+}
 	
+		else{
+			var bulletReachTime = getDistance(curPlayer.pos, enemy.pos) / Number(curBulletSpeed)
+			// console.log(bulletReachTime)
+			if (window.menu.UserSetting.shoot.autoAimPingCorrectionEnabled){
+				bulletReachTime += window.gameVars.Perfomance.lastLAT / 2000;
+			}
+			// var range = bulletReachTime * enemy.speed;
+
+			var prediction = {
+				x: 0,
+				y: 0
+			};
+
+			var prediction = {
+				x: enemy.speed.x * bulletReachTime,
+				y: enemy.speed.y * bulletReachTime
+			}
+			// console.log('a',enemy.speed.x, enemy.speed.y)
+
+			// prediction.x = prediction.x;
+			// prediction.y = prediction.y;
+			// console.log('a',enemy.prediction)
+			var predInert = window.menu.UserSetting.shoot.autoAimPredictionInertia;
+
+			enemy.prediction = prediction
+			// console.log('b',enemy.prediction)
+
+			// console.log('b',prediction)
+			// console.log('c',enemy.prediction)
+		}
+
+
+
+		// enemy.range = range;
+
+		// console.log('predactual', enemy.prediction)
+			// console.log('range', enemy.range)
+		// };
+}
 	// var runTimer = function (timerText, timerTime) {
 	// 	if(!game[obfuscate.pieTimer] || (game[obfuscate.pieTimer].timerTimeout && getSecondsElapsed(game[obfuscate.pieTimer].timerTimeout) < 0.1))
 	// 		return;
@@ -351,52 +382,52 @@ window.gameFunctions.gameUpdate = function(){
 	// var stopTimer = function() {
 	// 	if(!game[obfuscate.pieTimer])
 	// 		return;
-		
+
 	// 	game[obfuscate.pieTimer][obfuscate.free]();
-		
+
 	// 	game[obfuscate.pieTimer].timerBackground._tint = 16777215;
 	// 	game[obfuscate.pieTimer].outerCircle._tint = 16777215;
 	// 	game[obfuscate.pieTimer].counterText._tint = 16777215;
 	// 	game[obfuscate.pieTimer].labelText._tint = 16777215;
-		
+
 	// 	game[obfuscate.pieTimer].timerTimeout = performance.now();
 	// };
-	
+
 	// var getLootRange = function(loot) {
 	// 	// console.log("Loot range", getDistance(loot.pos, curPlayer.pos) - items[loot.name].rad - gameData.player.radius);
 	// 	return getDistance(loot.pos, curPlayer.pos) - items[loot.name].rad - gameData.player.radius;
 	// }
 
 	// var needToLoot = function() {
-					
+
 	// 	var loot = game[obfuscate.lootBarn][obfuscate.closestLoot];
 	// 	// console.log("Loot pool:", game[obfuscate.lootBarn][obfuscate.lootPool]);
 	// 	// console.log("Closest loot:", game[obfuscate.lootBarn][obfuscate.closestLoot])
 	// 	var gunsSafeDistance = window.menu.UserSetting.loot.autolootSafeDistance;
-		
+
 	// 	if(!loot) {			
 	// 		return false;
 	// 	}
-			
-		
+
+
 	// 	var needGuns = !invWeapon1 || !invWeapon2;
-		
+
 	// 	var gunsNearBy = game[obfuscate.lootBarn][obfuscate.lootPool][obfuscate.pool].filter((l) => l.active && getLootRange(l) < gunsSafeDistance && gunNames.includes(l.name));
-		
+
 	// 	var isSafeToPickup = !gunNames.includes(curPlayer.weapType);
-		
+
 	// 	var lootIsDual = 
 	// 		(invWeapon1 && invWeapon1.dualWieldType && invWeapon1.id == loot.name) || 
 	// 		(invWeapon2 && invWeapon2.dualWieldType && invWeapon2.id == loot.name);
-		
-		
+
+
 	// 	var dualOnlyInRange = gunsNearBy.every((g) =>
 	// 		(invWeapon1 && invWeapon1.dualWieldType && invWeapon1.id == g.name) || 
 	// 		(invWeapon2 && invWeapon2.dualWieldType && invWeapon2.id == g.name));
-		
+
 	// 	if(!isSafeToPickup && !needGuns && gunsNearBy.length > 0 && !dualOnlyInRange)
 	// 		return;
-		
+
 	// 	if(loot.name.includes('pan')) return true;
 	// 	else if(loot.name.includes('katana')) return true;
 	// 	else if(loot.name.includes('stonehammer')) return true;
@@ -406,98 +437,145 @@ window.gameFunctions.gameUpdate = function(){
 	// 		if(needGuns || lootIsDual)
 	// 			return true;
 	// 	}		
-		
+
 	// 	else if(loot.name.includes('backpack') && loot.name > game[obfuscate.activePlayer][obfuscate.netData].backpack) return true;
 	// 	else if(loot.name.includes('chest') && loot.name > game[obfuscate.activePlayer][obfuscate.netData].chest) return true;
 	// 	else if(loot.name.includes('helmet') && loot.name > game[obfuscate.activePlayer][obfuscate.netData].helmet) return true;
 	// 	else if(game[obfuscate.activePlayer][obfuscate.localData].inventory.hasOwnProperty(loot.name)){
 	// 		var backpackLvls = parseInt(game[obfuscate.activePlayer][obfuscate.netData].backpack.match(/\d/g).join(""));
-				
+
 	// 		var max = gameData.bagSizes[loot.name][backpackLvls];
 	// 		var cur = game[obfuscate.activePlayer][obfuscate.localData].inventory[loot.name];
-				
+
 	// 		if(cur < max)
 	// 			return true;
 	// 	}
-		
+
 	// 	return false;
 	// };
-	
+
 	// Local variables
-	
+
 	var game = this;
 	// console.log(game);
-	if(!window.gameVars)
+	if (!window.gameVars)
 		return;
-	
+
 	var state = window.gameVars.Game;
+	// console.log(state)
 	var gameData = state.GameData;
-	
-	if(!gameData)
+
+	if (!gameData)
 		return;
-	
+
 	var items = gameData.items;
-	var mapScale = 30;
+	var mapScale = 16;
+
 	var autoFireGuns = ["frag", "fists", "flare_gun", "mk12", "mp220", "m870", "sv98", "awc", "m39", "mosin", "smoke", "saiga", "m9", "m9_dual", "ot38", "ot38_dual", "deagle", "deagle_dual", "spas12", "garand", "karambit_rugged", "karambit_prismatic",
-	"bayonet_rugged", "bayonet_woodland", "huntsman_rugged", "huntsman_burnished", "woodaxe", "hook", "pan", "karambit_drowned", "woodaxe_bloody", "m4a1", "bowie_vintage", "bowie_frontier", "usas", "mirv", "bar", "fireaxe", "m1911", "m1911_dual", "m1a1", "m1100",
-	"katana", "scorpion", "stonehammer", "model94", "snowball", "ots38_dual", "ots38", "katana_rusted", "kukri_trad", "an94", "machete_taiga", "m1014", "katana_orchid", "strobe", "naginata", "potato", "flare_gun_dual", "sledgehammer", "p30l", "p30l_dual", "bonesaw_rusted", "potato_cannon", "scout", 
-"mkg45", "blr", "svd", "vss", "scarssr", "186", "potato_cannonball"
-];
-
+		"bayonet_rugged", "bayonet_woodland", "huntsman_rugged", "huntsman_burnished", "woodaxe", "hook", "pan", "karambit_drowned", "woodaxe_bloody", "m4a1", "bowie_vintage", "bowie_frontier", "usas", "mirv", "bar", "fireaxe", "m1911", "m1911_dual", "m1a1", "m1100",
+		"katana", "scorpion", "stonehammer", "model94", "snowball", "ots38_dual", "ots38", "katana_rusted", "kukri_trad", "an94", "machete_taiga", "m1014", "katana_orchid", "strobe", "naginata", "potato", "flare_gun_dual", "sledgehammer", "p30l", "p30l_dual", "bonesaw_rusted", "potato_cannon", "scout", 
+	"mkg45", "blr", "svd", "vss", "scarssr", "186", "potato_cannonball"
+	];
 	var grenadeTimerWarning = 1.05;
-	
-	var guns = [];
-	var gunNames = [];
-	for (var itm in items){
-		var itmType = items[itm].type;
-		if(itmType == "gun")
-		{
-			items[itm].id = itm;
-			guns.push(items[itm])
-			gunNames.push(itm)
-		}
-	}
-	
-	var curPlayer = game[obfuscate.activePlayer];
 
-	if(!curPlayer)
-		return;
+	// var guns = [];
+	// var gunNames = [];
+	// for (var itm in items) {
+	// 	var itmType = items[itm].type;
+	// 	if (itmType == "gun") {
+	// 		items[itm].id = itm;
+	// 		guns.push(items[itm])
+	// 		gunNames.push(itm)
+	// 	}
+	// }
+
+	// console.log('guns',guns)
+	// console.log('names', gunNames)
+
+	var curPlayer = game[obfuscate.activePlayer];
 	
-	var curWeapon = null;
-	// console.log(gameData);
-	for(var k in gameData.items){
-		if (k.toString().includes(curPlayer.weapType))
-			curWeapon = gameData.items[k];
+// 	positions.unshift(
+// 		{
+// 		pos: curPlayer.pos,
+// 		time: window.performance.now()/1000
+// 		})
+
+
+// 	if(positions.length > 1 && positions[0].pos != positions[1].pos){
+// 		setTimeout(function(){
+// 			timeDiff = positions[0].time - positions[1].time
+// 			distDiff = getDistance(positions[0].pos,positions[1].pos)
+// 			console.log('time', timeDiff)
+// 			console.log('dist', distDiff)
+// 			console.log(positions)	
+// 			positions.pop();
+// 		}, 500)
+// }
+
+	var bullets = window.gameVars.Game.BulletBarn
+
+	var guns = window.gameVars.Game.GunBarn
+
+	var gunTypes = window.gameVars.Game.GunTypes
+
+	var curWeapon = curPlayer[obfuscate.localData].weapons[curPlayer[obfuscate.localData].curWeapIdx].type
+	
+	var curBulletSpeed = 0;
+	
+	console.log(positions)
+	// var typeOfBullet = null;
+
+	
+
+	if(curPlayer[obfuscate.localData].curWeapIdx < 2)
+    	{
+    	curBulletSpeed = bullets[guns[curWeapon].bulletType].speed
+}
+	else{
+		curBulletSpeed = 0
 	}
-	
-	var curBullet = null;
-	if(curWeapon)
-		for(var k in gameData.bullets){
-			if (k.toString().includes(curWeapon.bulletType))
-			{
-				curBullet = gameData.bullets[k];
-			}
-		}
-  
-	var invWeapon1Name = curPlayer[obfuscate.localData].weapons["0"].name;
-	var invWeapon2Name = curPlayer[obfuscate.localData].weapons["1"].name;
+
+    // console.log(curBulletSpeed)
+
+		// console.log(curBullet.speed)
+// 		console.log('bullet', curBullet)
+// 		console.log('bulletSpeed', curBullet.speed)
+
+	// console.log('idx',curPlayer[obfuscate.localData].curWeapIdx)
+	// console.log('bullbarn',bullets)
+	// console.log('gunbarn',guns)
+	// console.log('guntype',gunTypes)
+	// console.log('curweap', curWeapon)
+
+	// console.log('TYPEA', gunTypes[curWeapon].damage)
+	// console.log('data',gameData)
+	// console.log('localData',curPlayer[obfuscate.localData])
+	// console.log('player',game[obfuscate.activePlayer])
+	// console.log('bullet', curPlayer[obfuscate.localData].weapons[curWeapIdx])
+
+	//quickswitch use later
+	// var invWeapon1Name = curPlayer[obfuscate.localData].weapons["0"].name;
+	// var invWeapon2Name = curPlayer[obfuscate.localData].weapons["1"].name;
 
 	// console.log(curPlayer[obfuscate.localData].weapons["0"]);
 	// console.log(curWeapon);
 
-	var fullAmmoGuns = {"mp5": 30, "mac10": 32, "ump9": 30, "vector": 33, "famas": 25, "hk416": 30, "m4a1": 30, "mk12": 20, "m249": 100, "qbb97": 75, "ak47": 30, "scar": 20, 
+	var fullAmmoGuns = {
+		"mp5": 30, "mac10": 32, "ump9": 30, "vector": 33, "famas": 25, "hk416": 30, "m4a1": 30, "mk12": 20, "m249": 100, "qbb97": 75, "ak47": 30, "scar": 20,
 		"dp28": 60, "bar": 20, "mosin": 5, "sv98": 10, "awc": 5, "m39": 20, "garand": 8, "m870": 5, "saiga": 5, "spas12": 9, "m9": 15, "m9_dual": 30, "m93r": 20,
 		"m93r_dual": 40, "glock": 17, "glock_dual": 34, "ot38": 5, "ot38_dual": 10, "deagle": 7, "deagle_dual": 14
 	}
-	
-	var invWeapon1 = invWeapon1Name == "" ? null : guns.find((g) => g.id == invWeapon1Name);
-	var invWeapon2 = invWeapon2Name == "" ? null : guns.find((g) => g.id == invWeapon2Name);
-	
-	processPlayerSpeed(curPlayer, 0.1);
-	
-	curPlayer.moving = curPlayer.speed > 0.01;
 
-	// Switch weapons
+	// var invWeapon1 = invWeapon1Name == "" ? null : guns.find((g) => g.id == invWeapon1Name);
+	// var invWeapon2 = invWeapon2Name == "" ? null : guns.find((g) => g.id == invWeapon2Name);
+
+	// processPlayerSpeed(curPlayer, 0.1);
+
+	// curPlayer.moving = curPlayer.speed > 0.01;
+
+	// if(window.gameVars.Input.Cheat. == true){
+
+	//Switch weapons
 	var pressOne = function() {
 		if(!game[obfuscate.input].keys["49"]) {
 			setTimeout(function() {
@@ -515,11 +593,10 @@ window.gameFunctions.gameUpdate = function(){
 				game[obfuscate.input].keys["50"] = true;
 				setTimeout(function() {
 					delete game[obfuscate.input].keys["50"]
-				}, 100);
+				}, 200);
 			}, 50);
 		}
 	}
-
 	// var pressReload = function () {
 	// 	if(!game[obfuscate.input].keys["82"]) {
 	// 		setTimeout(function () {
@@ -531,16 +608,20 @@ window.gameFunctions.gameUpdate = function(){
 	// 	}
 	// }
 
-// 	var autoReloadGuns = function () {
-// 		for (let gunName in fullAmmoGuns) {
-// 			if (curWeapon.id == gunName && (curWeapon.id == invWeapon1Name && curPlayer[obfuscate.localData].weapons["0"].ammo < fullAmmoGuns[gunName])) {
-// 				pressReload();
-// 			} else if (curWeapon.id == gunName && (curWeapon.id == invWeapon2Name && curPlayer[obfuscate.localData].weapons["1"].ammo < fullAmmoGuns[gunName])) {
-// 				pressReload();
-// 			}
-// 		}	
-// 	}
-	
+	// 	var autoReloadGuns = function () {
+	// 		for (let gunName in fullAmmoGuns) {
+	// 			if (curWeapon.id == gunName && (curWeapon.id == invWeapon1Name && curPlayer[obfuscate.localData].weapons["0"].ammo < fullAmmoGuns[gunName])) {
+	// 				pressReload();
+	// 			} else if (curWeapon.id == gunName && (curWeapon.id == invWeapon2Name && curPlayer[obfuscate.localData].weapons["1"].ammo < fullAmmoGuns[gunName])) {
+	// 				pressReload();
+	// 			}
+	// 		}	
+	// 	}
+	// console.log('active',game[obfuscate.activePlayer])
+	// console.log(curPlayer[obfuscate.localData].curWeapIdx);
+
+
+	// console.log(game[obfuscate.input])
 	var weaponSwitcher = function() {
 		if (curPlayer[obfuscate.localData].curWeapIdx == 2 || curPlayer[obfuscate.localData].curWeapIdx == 1) {
 			pressOne();
@@ -553,18 +634,18 @@ window.gameFunctions.gameUpdate = function(){
 		}		
 	}
 
+	if(window.gameVars.Input.Cheat.SwitchWeaponFirst) {
+		weaponSwitcher();
+	}
 
-	// if(window.gameVars.Input.Cheat.SwitchWeaponFirst) {
-	// 	weaponSwitcher();
-	// }
 
 	// if(window.menu.UserSetting.shoot.autoReloadEnabled) {
 	// 	autoReloadGuns();
 	// }
 	// Laser
-	
+
 	// var laser = state.Laser;
-	
+
 	// if(curBullet)
 	// {
 	// 	laser.active = true;
@@ -576,22 +657,20 @@ window.gameFunctions.gameUpdate = function(){
 	// {
 	// 	laser.active = false;
 	// }
-	
-	//Zoom
+
+	// Zoom
 
 	var currentZoom = window.gameVars.ZoomLevel;
-	
+
 	currentZoom *= 1.0 + window.menu.UserSetting.look.zoomSpeed / 50 * window.gameVars.Input.Cheat.GetZoomDelta();
 	currentZoom = currentZoom < 0.1 ? 0.1 : currentZoom > 1.0 ? 1.0 : currentZoom;
-	
-	if(!window.gameVars.Menu && window.menu.UserSetting.look.zoomEnabled)
-		window.gameVars.ZoomLevel = currentZoom;
-	
-	// Detect enimies
-	
-	var enimies = detectEnimies();
 
-	enimies.forEach(processEnemy);
+	if (!window.gameVars.Menu && window.menu.UserSetting.look.zoomEnabled)
+		window.gameVars.ZoomLevel = currentZoom;
+
+	// Detect enimies
+
+	var enimies = detectEnimies();
 	window.gameVars.Game.Enimies = enimies;
 	// for (let i = 0; i < enimies.length; i++) {
 	// 	var enemyText = enimies[i].nameText.text;
@@ -600,7 +679,7 @@ window.gameFunctions.gameUpdate = function(){
 	// console.log(curPlayer.U.health);
 
 	// Update enemy lines
-	
+
 	window.gameVars.Game.EnemyLines.points = enimies
 		.filter((enemy) => !enemy.teammate)
 		.map((enemy) => {
@@ -609,19 +688,25 @@ window.gameFunctions.gameUpdate = function(){
 				y: (curPlayer.pos.y - enemy.pos.y) * mapScale
 			};
 		});
-	
+
+	// console.log(mapScale)
 	// Update autoaim
 	var target = null;
-	
+
 	// console.log(curPlayer.q.dead); \
 	var alwaysOn = window.menu.UserSetting.shoot.autoAimAlwaysOnEnabled;
-	if(alwaysOn) {
+	if (alwaysOn) {
 		window.gameVars.Input.Cheat.AutoAimPressed = !game.spectating;
 	}
 
 	window.gameVars.Input.Cheat.ShowNamesPressed = true;
 	// console.log("Update: Auto aim pressed " + window.gameVars.Input.Cheat.AutoAimPressed);
 	// console.log(window.gameVars.Input.Cheat.AutoAimPressed);
+
+	function randInt(min, max) {
+		return Math.floor(Math.random() * (max - min)) + min;
+	  }
+	
 	if(!window.gameVars.Input.Cheat.AutoAimPressed == true && enimies.length != 0)
 	// if(window.menu.UserSetting.shoot.autoAimEnabled && window.gameVars.Input.Cheat.AutoAimPressed)
 	{
@@ -649,11 +734,11 @@ window.gameFunctions.gameUpdate = function(){
 				};
 				
 				var enemyDistance = getDistance(enemy.pos, mousePos);
-				console.log(enemyDistance)
+				// console.log(enemyDistance)
 
-				var angleDif = Math.abs(Math.atan2(enemyDir.y, enemyDir.x) - Math.atan2(mouseVec.y, mouseVec.x));
+				// var angleDif = Math.abs(Math.atan2(enemyDir.y, enemyDir.x) - Math.atan2(mouseVec.y, mouseVec.x));
 				
-				return 2 > 1 || enemyDistance <  6000;
+				// return 2 > 1 || enemyDistance <  6000;
 				
 			});
 					
@@ -678,29 +763,74 @@ window.gameFunctions.gameUpdate = function(){
 		// console.log('Enemies In Sight:', enemiesInSight)
 		// console.log('Index:', enemiesInSight[0])
 		// console.log(parseInt(Math.min(...distList)))
-
-		target = enemiesInSight[distList.indexOf(Math.min(...distList))]
-		// console.log('Target:', target)
-
-		
-		
-		  
+		enemyIndex = distList.indexOf(Math.min(...distList))
+		target = enemiesInSight[enemyIndex]
+		processEnemy(target)
+		// console.log('Target:', target.pos.x, target.pos.y)
 	}
+
 	window.gameVars.Game.Target = target;
 	(function() {
+// 		spin = true
+// 		if(!window.menu.UserSetting.shoot.spinBotEnabled) {
+// 			spin = false
+// 			window.gameVars.Input.Mouse.AimActive = true;
+
+// 			return;
+// }		
+		spinListX = [curPlayer.pos.x, curPlayer.pos.x+50, curPlayer.pos.x,curPlayer.pos.x-50] 
+		spinListY = [curPlayer.pos.y-50,curPlayer.pos.y,curPlayer.pos.y+50,curPlayer.pos.y]
 		if(!target)
+
 		{
-			window.gameVars.Input.Mouse.AimActive = false;
+			if (game[obfuscate.input].mouseButton){
+				window.gameVars.Input.Mouse.AimActive = false;
+				return;
+
+			}   
+			window.gameVars.Input.Mouse.AimActive = true;
+	    	window.gameVars.Input.Mouse.AimPos = game[obfuscate.camera].pointToScreen({x: spinListX[number], y: spinListY[number]})
+			number += 1
+			if (number == 4){
+				number = 0
+			}
+	
 			return;
 		}
-		
+
+
 		var pos = target.pos;
 		var prediction = target.prediction ? target.prediction : {x:0, y:0};
 		if(window.gameVars.Input.Cheat.AutoAimPressed == false){
 			window.gameVars.Input.Mouse.AimActive = true;
 			window.gameVars.Input.Mouse.AimPos = game[obfuscate.camera].pointToScreen({x: pos.x + prediction.x, y: pos.y + prediction.y});
-	}})();
-	
+			// console.log('Noncalculated',pos.x,pos.y,'Prediction', prediction.x,prediction.y, 'Calculated', pos.x + prediction.x, pos.y + prediction.y)
+			
+			}
+}
+)();
+
+
+			// a = []
+			// b = []
+			// for(p=0;p<100;p++) {
+			// 	a.append(Math.random() * 1280)
+			// 	b.append(Math.random() * 720)
+			// }
+			// for (l=0;l<100;l++){
+			// 	window.gameVars.Input.Mouse.AimPos = game[obfuscate.camera].pointToScreen({ x: a[l], y: b[l]});
+			// }
+
+	// window.gameVars.Input.Mouse.AimPos = game[obfuscate.camera].pointToScreen({ x: 0, y: 0 });
+	// window.gameVars.Input.Mouse.AimPos = game[obfuscate.camera].pointToScreen({ x: 640, y: 0 });
+	// window.gameVars.Input.Mouse.AimPos = game[obfuscate.camera].pointToScreen({ x: 1280, y: 0 });
+	// window.gameVars.Input.Mouse.AimPos = game[obfuscate.camera].pointToScreen({ x: 1280, y: 360 });
+	// window.gameVars.Input.Mouse.AimPos = game[obfuscate.camera].pointToScreen({ x: 1280, y: 720 });
+	// window.gameVars.Input.Mouse.AimPos = game[obfuscate.camera].pointToScreen({ x: 640, y: 720 });
+	// window.gameVars.Input.Mouse.AimPos = game[obfuscate.camera].pointToScreen({ x: 0, y: 720 });
+	// window.gameVars.Input.Mouse.AimPos = game[obfuscate.camera].pointToScreen({ x: 0, y: 360 });
+
+
 	// Grenade timer
 	// console.log(game[obfuscate.input]);
 	// console.log(game[obfuscate.input].mouseButton);
@@ -721,7 +851,7 @@ window.gameFunctions.gameUpdate = function(){
 // 			stopTimer();
 // 			return;
 // 		}
-		
+
 // 		if(game[obfuscate.pieTimer].clientData.duration - game[obfuscate.pieTimer].clientData.elapsed < grenadeTimerWarning)
 // 		{
 // 			game[obfuscate.pieTimer].timerBackground._tint = 0xff0000;
@@ -739,7 +869,7 @@ window.gameFunctions.gameUpdate = function(){
 // 			stopTimer();
 // 			return;
 // 		}
-		
+
 // 		if(game[obfuscate.pieTimer].clientData.duration - game[obfuscate.pieTimer].clientData.elapsed < grenadeTimerWarning)
 // 		{
 // 			game[obfuscate.pieTimer].timerBackground._tint = 0xff0000;
@@ -749,13 +879,15 @@ window.gameFunctions.gameUpdate = function(){
 // 		}
 // 	}
 	// console.log(needToLoot());
-	
+
 	// Bump fire
-	// console.log(autoFireGuns.includes(curPlayer.weapType));
-	// console.log(game[obfuscate.input]);
-	// window.gameVars.Input.Cheat.RepeatFire = !window.gameVars.Menu && window.menu.UserSetting.shoot.bumpFireEnabled && game[obfuscate.input].mouseButton && autoFireGuns.includes(curPlayer.weapType);
+	// console.log('mbut',game[obfuscate.input].mouseButton);
+	window.gameVars.Input.Cheat.RepeatFire = window.menu.UserSetting.shoot.bumpFireEnabled && game[obfuscate.input].mouseButton && autoFireGuns.includes(curPlayer.weapTypeOld);
 	// console.log(window.gameVars.Input.Cheat.RepeatFire);
-	
+	// console.log('weap', curPlayer)
+	// console.log('bump',window.menu.UserSetting.shoot.bumpFireEnabled);
+	// console.log('mPre',game[obfuscate.input][[Scopes]]0)
+	// console.log(game[obfuscate.input].mouseButton)
 	// Auto loot	
 	// window.gameVars.Input.Cheat.RepeatInteraction = window.menu.UserSetting.loot.autolootEnabled && (getSecondsElapsed(state.LastTimeDropItem) > window.menu.UserSetting.loot.autolootDropDelay) && needToLoot();
 	// var pressF = function () {
