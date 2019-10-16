@@ -21,18 +21,19 @@
 			
 			window.menu.UserSetting = {
 				shoot: {
+					// spinBotEnabled: true,
 					lasersightEnabled: 				false,
 					fragGrenadeTimerEnabled: 		false,
-					bumpFireEnabled: 				false,
+					bumpFireEnabled: 				true,
 					autoAimEnabled: 				true,
 					autoAimAlwaysOnEnabled:         false,
 					autoReloadEnabled:              false,
 					autoAimSpeedInertia:			0.4,
-					autoAimPredictionInertia:		0.4,
+					autoAimPredictionInertia:		0.7,
 					autoAimRestirctionEnabled: 		false,
 					autoAimRestirctionAngle:		20,
 					autoAimRestrictionCloseRange:	11,
-					autoAimPingCorrectionEnabled:	false,
+					autoAimPingCorrectionEnabled:	true,
 					// autoAimAntiAntiCheatEnabled: 	true,
 					// autoAimAntiAntiCheatInertia:	0.4,
 				},
@@ -63,8 +64,9 @@
 					switchMainWeapon: {code: 188, shift: false, ctrl: false, alt: false},
 					zoomIn: {code: -5, shift: false, ctrl: false, alt: false},
 					zoomOut: {code: -4, shift: false, ctrl: false, alt: false},
-					displayNames: {code: 16, shift: false, ctrl: false, alt: false},
+					displayNames: {code: 74, shift: false, ctrl: false, alt: false},
 					// streamerMode: {code: 80, shift: false, ctrl: false, alt: false},
+					// spinPressed: {code: 16, shift: false, ctrl: false, alt: false},
 					goUp: {code: 87, shift: false, ctrl: false, alt: false},
 					goLeft: {code: 65, shift: false, ctrl: false, alt: false},
 					goDown: {code: 83, shift: false, ctrl: false, alt: false},
@@ -137,6 +139,7 @@
 			}
 			
 			window.menu.UserSetting.shoot = {
+				// spinBotEnabled: 				btnGetState("spinBotEnabled"),
 				lasersightEnabled: 				btnGetState("lasersightEnabled"),
 				fragGrenadeTimerEnabled: 		btnGetState("fragGrenadeTimerEnabled"),
 				bumpFireEnabled: 				btnGetState("bumpFireEnabled"),
@@ -208,7 +211,7 @@
 			
 			// shoot
 			state = window.menu.UserSetting.shoot;
-			
+			// btnSetState("spinBotEnabled",				state.spinBotEnabled);
 			btnSetState("lasersightEnabled",				state.lasersightEnabled);
 			btnSetState("fragGrenadeTimerEnabled",			state.fragGrenadeTimerEnabled);
 			btnSetState("bumpFireEnabled",					state.bumpFireEnabled);
@@ -258,6 +261,8 @@
 			btnSetBind("zoomIn",							state.zoomIn);
 			btnSetBind("zoomOut",							state.zoomOut);
 			btnSetBind("displayNames",						state.displayNames);
+			// btnSetBind("spinPressed",						state.spinPressed);
+
 			// btnSetBind("streamerMode",						state.streamerMode);
 			btnSetBind("goUp",								state.goUp);
 			btnSetBind("goLeft",							state.goLeft);
