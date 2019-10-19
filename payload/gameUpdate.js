@@ -174,13 +174,7 @@ window.gameFunctions.gameUpdate = function () {
 
 		var allPlayers = game[obfuscate.playerBarn][obfuscate.playerInfo];
 		var firstPlayerId = Object.keys(allPlayers)[0];
-		// console.log("allPlayers: ", allPlayers);
-		// console.log("firstPlayerID: ", firstPlayerId);
-		// console.log("objectIds: ", objectIds);
-
-
 		var firstPlayerObj = game[obfuscate.objectCreator].idToObj[firstPlayerId];
-		// console.log(firstPlayerObj);
 		var allPlayerDict = {};
 		for (let p in allPlayers) {
 			let team = allPlayers[p].teamId;
@@ -188,13 +182,8 @@ window.gameFunctions.gameUpdate = function () {
 				allPlayerDict[team] = [];
 			}
 			let teamPlayer = allPlayers[p].name;
-			// let teammateData = game[obfuscate.objectCreator].idToObj[allPlayers[p].playerId];
-			// if (teammateData) {
-			// 	// console.log(allPlayers[p].name + " is defined!");
-			// }
 			allPlayerDict[team].push(teamPlayer);
 		}
-		// console.log(allPlayerDict);
 		// $("#ui-game-tab-keybinds").html(allPlayerDict);
 		if (window.gameVars.Game.updateTeamTab) {
 			window.gameVars.Game.updateTeamTab = false;
@@ -203,7 +192,6 @@ window.gameFunctions.gameUpdate = function () {
 			$("#ui-game-tab-keybinds").html("");
 			$("#ui-game-tab-keybinds").css("overflow-y", "scroll");
 			var killfeedText = $("#ui-killfeed-0 > div").html();
-			// console.log(window.deadPlayers);
 			if (killfeedText.indexOf("killed") !== -1) {
 				let deadPlayerText = killfeedText.split("killed ")[1];
 				if (deadPlayerText) {
@@ -243,7 +231,8 @@ window.gameFunctions.gameUpdate = function () {
 				return playerObject &&
 					(!isTeammate(id, playerObject)) &&
 					(!playerObject[obfuscate.netData].dead) &&
-					id != selfId;
+					(playerObject.layer == game[obfuscate.activePlayer].layer) &&
+					(id != selfId);
 			})
 			.map(function (id) {
 				return game[obfuscate.objectCreator].idToObj[id];
@@ -259,11 +248,9 @@ window.gameFunctions.gameUpdate = function () {
 		if (!enemy)
 			return;
 		
-		enemy.posData = []
 		enemy.prediction = { x: 0.0, y: 0.0 };
 		enemy.speed = { x: 0.0, y: 0.0 };
 		enemy.distance = { x: 0.0, y: 0.0 };
-		enemy.direction = {x: 0,y:0};
 		timeDiff = 0.001
 		distDiffX = 0
 		distDiffY = 0
@@ -280,9 +267,6 @@ window.gameFunctions.gameUpdate = function () {
 				distDiffX = processes[0].pos.x - processes[1].pos.x
 				distDiffY = processes[0].pos.y - processes[1].pos.y
 	
-				// console.log('time', timeDiff)
-				// console.log('dist', distDiff)
-				// console.log(processes)	
 				processes.pop();
 			}
 	}
@@ -291,12 +275,10 @@ window.gameFunctions.gameUpdate = function () {
 			x: distDiffX,
 			y: distDiffY
 		}
-		// console.log(distance)
 		// enemy.direction = {
 		// 	x: (enemy.posData[1].pos.x - enemy.posData[0].pos.x) / distance,
 		// 	y: (enemy.posData[1].pos.y - enemy.posData[0].pos.y) / distance		
 		// }
-		// console.log(enemy.direction)
 		var timeElapsed = timeDiff
 		var speed = 
 		{
@@ -304,41 +286,25 @@ window.gameFunctions.gameUpdate = function () {
 			y: distance.y / timeElapsed
 		}
 
-		// console.log('distance',distance)
-		// console.log('speed',speed)
-		// console.log('time', timeElapsed)
-
-		// speed = (speed)
-		// console.log('a', enemy.speed)
 		var predSpeed = window.menu.UserSetting.shoot.autoAimSpeedInertia
 		enemy.speed = speed
-		// console.log('b', enemy.speed)
 
 
 		enemy.distance = distance;
-		
-		// console.log(enemy.pos)		
-		// while (enemy.posData.length > enemyPosListCount) {
-		// 	enemy.posData.shift();
-		// }
 
 		if(curBulletSpeed == 0){
 			enemy.prediction = {
 				x: 0,
 				y: 0
 			};
-			// enemy.range = 0.0
-			// console.log('predfists', enemy.prediction)
 			return;
 }
 	
 		else{
 			var bulletReachTime = getDistance(curPlayer.pos, enemy.pos) / Number(curBulletSpeed)
-			// console.log(bulletReachTime)
 			if (window.menu.UserSetting.shoot.autoAimPingCorrectionEnabled){
 				bulletReachTime += window.gameVars.Perfomance.lastLAT / 2000;
 			}
-			// var range = bulletReachTime * enemy.speed;
 
 			var prediction = {
 				x: 0,
@@ -349,32 +315,17 @@ window.gameFunctions.gameUpdate = function () {
 				x: enemy.speed.x * bulletReachTime,
 				y: enemy.speed.y * bulletReachTime
 			}
-			// console.log('a',enemy.speed.x, enemy.speed.y)
-
-			// prediction.x = prediction.x;
-			// prediction.y = prediction.y;
-			// console.log('a',enemy.prediction)
 			var predInert = window.menu.UserSetting.shoot.autoAimPredictionInertia;
 
 			enemy.prediction = prediction
-			// console.log('b',enemy.prediction)
-
-			// console.log('b',prediction)
-			// console.log('c',enemy.prediction)
 		}
 
 
 
-		// enemy.range = range;
-
-		// console.log('predactual', enemy.prediction)
-			// console.log('range', enemy.range)
-		// };
 }
 	// var runTimer = function (timerText, timerTime) {
 	// 	if(!game[obfuscate.pieTimer] || (game[obfuscate.pieTimer].timerTimeout && getSecondsElapsed(game[obfuscate.pieTimer].timerTimeout) < 0.1))
 	// 		return;
-	// 	// console.log("Calling functions.");
 	// 	game[obfuscate.pieTimer][obfuscate.free]();
 	// 	game[obfuscate.pieTimer][obfuscate.init](() => {stopTimer()}, timerTime, timerText, false);
 	// };
@@ -394,15 +345,12 @@ window.gameFunctions.gameUpdate = function () {
 	// };
 
 	// var getLootRange = function(loot) {
-	// 	// console.log("Loot range", getDistance(loot.pos, curPlayer.pos) - items[loot.name].rad - gameData.player.radius);
 	// 	return getDistance(loot.pos, curPlayer.pos) - items[loot.name].rad - gameData.player.radius;
 	// }
 
 	// var needToLoot = function() {
 
 	// 	var loot = game[obfuscate.lootBarn][obfuscate.closestLoot];
-	// 	// console.log("Loot pool:", game[obfuscate.lootBarn][obfuscate.lootPool]);
-	// 	// console.log("Closest loot:", game[obfuscate.lootBarn][obfuscate.closestLoot])
 	// 	var gunsSafeDistance = window.menu.UserSetting.loot.autolootSafeDistance;
 
 	// 	if(!loot) {			
@@ -457,12 +405,10 @@ window.gameFunctions.gameUpdate = function () {
 	// Local variables
 
 	var game = this;
-	// console.log(game);
 	if (!window.gameVars)
 		return;
 
 	var state = window.gameVars.Game;
-	// console.log(state)
 	var gameData = state.GameData;
 
 	if (!gameData)
@@ -489,9 +435,6 @@ window.gameFunctions.gameUpdate = function () {
 	// 	}
 	// }
 
-	// console.log('guns',guns)
-	// console.log('names', gunNames)
-
 	var curPlayer = game[obfuscate.activePlayer];
 	
 // 	positions.unshift(
@@ -505,9 +448,6 @@ window.gameFunctions.gameUpdate = function () {
 // 		setTimeout(function(){
 // 			timeDiff = positions[0].time - positions[1].time
 // 			distDiff = getDistance(positions[0].pos,positions[1].pos)
-// 			console.log('time', timeDiff)
-// 			console.log('dist', distDiff)
-// 			console.log(positions)	
 // 			positions.pop();
 // 		}, 500)
 // }
@@ -520,12 +460,7 @@ window.gameFunctions.gameUpdate = function () {
 
 	var curWeapon = curPlayer[obfuscate.localData].weapons[curPlayer[obfuscate.localData].curWeapIdx].type
 	
-	var curBulletSpeed = 0;
-	
-	console.log(positions)
-	// var typeOfBullet = null;
-
-	
+	var curBulletSpeed = 0;	
 
 	if(curPlayer[obfuscate.localData].curWeapIdx < 2)
     	{
@@ -535,30 +470,10 @@ window.gameFunctions.gameUpdate = function () {
 		curBulletSpeed = 0
 	}
 
-    // console.log(curBulletSpeed)
-
-		// console.log(curBullet.speed)
-// 		console.log('bullet', curBullet)
-// 		console.log('bulletSpeed', curBullet.speed)
-
-	// console.log('idx',curPlayer[obfuscate.localData].curWeapIdx)
-	// console.log('bullbarn',bullets)
-	// console.log('gunbarn',guns)
-	// console.log('guntype',gunTypes)
-	// console.log('curweap', curWeapon)
-
-	// console.log('TYPEA', gunTypes[curWeapon].damage)
-	// console.log('data',gameData)
-	// console.log('localData',curPlayer[obfuscate.localData])
-	// console.log('player',game[obfuscate.activePlayer])
-	// console.log('bullet', curPlayer[obfuscate.localData].weapons[curWeapIdx])
-
 	//quickswitch use later
 	// var invWeapon1Name = curPlayer[obfuscate.localData].weapons["0"].name;
 	// var invWeapon2Name = curPlayer[obfuscate.localData].weapons["1"].name;
 
-	// console.log(curPlayer[obfuscate.localData].weapons["0"]);
-	// console.log(curWeapon);
 
 	var fullAmmoGuns = {
 		"mp5": 30, "mac10": 32, "ump9": 30, "vector": 33, "famas": 25, "hk416": 30, "m4a1": 30, "mk12": 20, "m249": 100, "qbb97": 75, "ak47": 30, "scar": 20,
@@ -617,11 +532,8 @@ window.gameFunctions.gameUpdate = function () {
 	// 			}
 	// 		}	
 	// 	}
-	// console.log('active',game[obfuscate.activePlayer])
-	// console.log(curPlayer[obfuscate.localData].curWeapIdx);
 
 
-	// console.log(game[obfuscate.input])
 	var weaponSwitcher = function() {
 		if (curPlayer[obfuscate.localData].curWeapIdx == 2 || curPlayer[obfuscate.localData].curWeapIdx == 1) {
 			pressOne();
@@ -672,11 +584,6 @@ window.gameFunctions.gameUpdate = function () {
 
 	var enimies = detectEnimies();
 	window.gameVars.Game.Enimies = enimies;
-	// for (let i = 0; i < enimies.length; i++) {
-	// 	var enemyText = enimies[i].nameText.text;
-	// 	console.log(enemyText + " " + enimies[i].bleedTicker);
-	// }
-	// console.log(curPlayer.U.health);
 
 	// Update enemy lines
 
@@ -689,32 +596,26 @@ window.gameFunctions.gameUpdate = function () {
 			};
 		});
 
-	// console.log(mapScale)
 	// Update autoaim
 	var target = null;
 
-	// console.log(curPlayer.q.dead); \
 	var alwaysOn = window.menu.UserSetting.shoot.autoAimAlwaysOnEnabled;
 	if (alwaysOn) {
 		window.gameVars.Input.Cheat.AutoAimPressed = !game.spectating;
 	}
 
 	window.gameVars.Input.Cheat.ShowNamesPressed = true;
-	// console.log("Update: Auto aim pressed " + window.gameVars.Input.Cheat.AutoAimPressed);
-	// console.log(window.gameVars.Input.Cheat.AutoAimPressed);
 
 	function randInt(min, max) {
 		return Math.floor(Math.random() * (max - min)) + min;
 	  }
-	
+
 	if(!window.gameVars.Input.Cheat.AutoAimPressed == true && enimies.length != 0)
 	// if(window.menu.UserSetting.shoot.autoAimEnabled && window.gameVars.Input.Cheat.AutoAimPressed)
 	{
 
 
 		var mousePos = game[obfuscate.camera].pointToScreen(window.gameVars.Input.Mouse.Pos);
-		// console.log(mousePos);
-
 
 		var mouseVec =
 		{
@@ -734,7 +635,6 @@ window.gameFunctions.gameUpdate = function () {
 				};
 				
 				var enemyDistance = getDistance(enemy.pos, mousePos);
-				// console.log(enemyDistance)
 
 				// var angleDif = Math.abs(Math.atan2(enemyDir.y, enemyDir.x) - Math.atan2(mouseVec.y, mouseVec.x));
 				
@@ -754,19 +654,9 @@ window.gameFunctions.gameUpdate = function () {
 			distList.push(parseInt(getDistance2(posListX[i], posListY[i], curPlayer.pos.x, curPlayer.pos.y)))
 			
 		}
-		// console.log('MouseX:',mousePos.x)
-		// console.log('MouseY:',mousePos.y)
-	
-		// console.log('X:', posListX)
-		// console.log('Y:', posListY)
-		// console.log('Dist:', distList)
-		// console.log('Enemies In Sight:', enemiesInSight)
-		// console.log('Index:', enemiesInSight[0])
-		// console.log(parseInt(Math.min(...distList)))
 		enemyIndex = distList.indexOf(Math.min(...distList))
 		target = enemiesInSight[enemyIndex]
 		processEnemy(target)
-		// console.log('Target:', target.pos.x, target.pos.y)
 	}
 
 	window.gameVars.Game.Target = target;
@@ -804,7 +694,6 @@ window.gameFunctions.gameUpdate = function () {
 		if(window.gameVars.Input.Cheat.AutoAimPressed == false){
 			window.gameVars.Input.Mouse.AimActive = true;
 			window.gameVars.Input.Mouse.AimPos = game[obfuscate.camera].pointToScreen({x: pos.x + prediction.x, y: pos.y + prediction.y});
-			// console.log('Noncalculated',pos.x,pos.y,'Prediction', prediction.x,prediction.y, 'Calculated', pos.x + prediction.x, pos.y + prediction.y)
 			
 			}
 }
@@ -832,8 +721,6 @@ window.gameFunctions.gameUpdate = function () {
 
 
 	// Grenade timer
-	// console.log(game[obfuscate.input]);
-	// console.log(game[obfuscate.input].mouseButton);
 // 	if(window.menu.UserSetting.shoot.fragGrenadeTimerEnabled && curPlayer.weapType == "frag" && !game[obfuscate.pieTimer][obfuscate.activeTimer] && game[obfuscate.input].mouseButton) {
 // 		runTimer("FRAG", 4.0);
 // 	}	
@@ -878,16 +765,9 @@ window.gameFunctions.gameUpdate = function () {
 // 			game[obfuscate.pieTimer].labelText._tint = 0xff0000;
 // 		}
 // 	}
-	// console.log(needToLoot());
 
 	// Bump fire
-	// console.log('mbut',game[obfuscate.input].mouseButton);
 	window.gameVars.Input.Cheat.RepeatFire = window.menu.UserSetting.shoot.bumpFireEnabled && game[obfuscate.input].mouseButton && autoFireGuns.includes(curPlayer.weapTypeOld);
-	// console.log(window.gameVars.Input.Cheat.RepeatFire);
-	// console.log('weap', curPlayer)
-	// console.log('bump',window.menu.UserSetting.shoot.bumpFireEnabled);
-	// console.log('mPre',game[obfuscate.input][[Scopes]]0)
-	// console.log(game[obfuscate.input].mouseButton)
 	// Auto loot	
 	// window.gameVars.Input.Cheat.RepeatInteraction = window.menu.UserSetting.loot.autolootEnabled && (getSecondsElapsed(state.LastTimeDropItem) > window.menu.UserSetting.loot.autolootDropDelay) && needToLoot();
 	// var pressF = function () {
