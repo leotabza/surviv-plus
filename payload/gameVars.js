@@ -49,7 +49,7 @@ window.gameVars.Input = {
 		AutoAimPressed: false,
         SwitchWeaponFirst: false,
 		StreamerMode: false,
-        // SpinPressed: false,
+        SpinPressed: false,
 		FirePressed: false,
 		ShowNamesPressed: false,
 		RepeatFire: false,
@@ -75,6 +75,11 @@ window.gameVars.Input = {
 			// LeftMouseButton: false,
 			// MiddleMouseButton: false,
 			// RightMouseButton: false,
+        SpinActive: false,
+        SpinPos: {
+            x: 0.0,
+            y: 0.0
+        }
 	},
 	Keyboard: {
 		ShiftPressed: false,
