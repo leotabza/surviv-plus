@@ -72,8 +72,8 @@ window.gameFunctions.gameOverride = function(){
 			window.gameVars.Input.Cheat.ZoomDelta -= 1;
 		}else if(checkBind(opt.displayNames, bind)) {
 			window.gameVars.Input.Cheat.ShowNamesPressed = down;
-		// }else if(checkBind(opt.spinPressed, bind)) {
-		// 	window.gameVars.Input.Cheat.SpinPressed = down;
+		}else if(checkBind(opt.spinPressed, bind)) {
+			window.gameVars.Input.Cheat.SpinPressed = down;
 		}else if(checkBind(opt.goUp, bind)) {
 			keyboardEvent(87, down);
 		}else if(checkBind(opt.goLeft, bind)) {
@@ -225,23 +225,38 @@ window.gameFunctions.gameOverride = function(){
 	}, false);
 	
 	// mouse
-
 	var onMouseMoveBase = this[obfuscate.input].onMouseMove;
 	this[obfuscate.input].onMouseMove = function(e){
-		if(window.gameVars){
-			window.gameVars.Input.Mouse.Pos.x = e.clientX;
-			window.gameVars.Input.Mouse.Pos.y = e.clientY;
-			
-			if(window.gameVars.Input.Mouse.AimActive) {
-				// e.clientX = window.gameVars.Input.Mouse.AimPos.x;
-				// e.clientY = window.gameVars.Input.Mouse.AimPos.y;
-				e = {
-					clientX: window.gameVars.Input.Mouse.AimPos.x,
-					clientY: window.gameVars.Input.Mouse.AimPos.y
-				}
+		window.gameVars.Input.Mouse.Pos.x = e.clientX
+		window.gameVars.Input.Mouse.Pos.y = e.clientY
+		if(window.gameVars.Input.Mouse.AimActive) {
+			// e.clientX = window.gameVars.Input.Mouse.AimPos.x;
+			// e.clientY = window.gameVars.Input.Mouse.AimPos.y;
+			e = {
+				clientX: window.gameVars.Input.Mouse.AimPos.x,
+				clientY: window.gameVars.Input.Mouse.AimPos.y
 			}
 		}
-	
+
+		else if (window.gameVars.Input.Mouse.SpinActive){
+			// e.clientX = window.gameVars.Input.Mouse.AimPos.x;
+			// e.clientY = window.gameVars.Input.Mouse.AimPos.y;
+			e = {
+				clientX: window.gameVars.Input.Mouse.SpinPos.x,
+				clientY: window.gameVars.Input.Mouse.SpinPos.y
+			}
+		}
+		else if (!window.gameVars.Input.Mouse.SpinActive){
+			window.gameVars.Input.Mouse.Pos.x = e.clientX
+			window.gameVars.Input.Mouse.Pos.y = e.clientY
+
+			// e = {
+			// 	clientX: window.gameVars.Input.Mouse.Pos.x,
+			// 	clientY: window.gameVars.Input.Mouse.Pos.x
+			// }
+
+		}
+
 	onMouseMoveBase.call(inpt, e);
 };
 		
