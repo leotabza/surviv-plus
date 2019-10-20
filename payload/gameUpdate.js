@@ -231,8 +231,9 @@ window.gameFunctions.gameUpdate = function () {
 				return playerObject &&
 					(!isTeammate(id, playerObject)) &&
 					(!playerObject[obfuscate.netData].dead) &&
-					(playerObject.layer == game[obfuscate.activePlayer].layer) &&
-					(id != selfId);
+					// (!playerObject[obfuscate.netData].downed) &&
+					// (playerObject.layer == game[obfuscate.activePlayer].layer) &&
+					id != selfId;
 			})
 			.map(function (id) {
 				return game[obfuscate.objectCreator].idToObj[id];
@@ -247,7 +248,7 @@ window.gameFunctions.gameUpdate = function () {
 	var processEnemy = function (enemy) {
 		if (!enemy)
 			return;
-		
+
 		enemy.prediction = { x: 0.0, y: 0.0 };
 		enemy.speed = { x: 0.0, y: 0.0 };
 		enemy.distance = { x: 0.0, y: 0.0 };
@@ -266,7 +267,6 @@ window.gameFunctions.gameUpdate = function () {
 				timeDiff = processes[0].time - processes[1].time
 				distDiffX = processes[0].pos.x - processes[1].pos.x
 				distDiffY = processes[0].pos.y - processes[1].pos.y
-	
 				processes.pop();
 			}
 	}
@@ -287,7 +287,7 @@ window.gameFunctions.gameUpdate = function () {
 		}
 
 		var predSpeed = window.menu.UserSetting.shoot.autoAimSpeedInertia
-		enemy.speed = speed
+		enemy.speed = speed 
 
 
 		enemy.distance = distance;
@@ -317,7 +317,7 @@ window.gameFunctions.gameUpdate = function () {
 			}
 			var predInert = window.menu.UserSetting.shoot.autoAimPredictionInertia;
 
-			enemy.prediction = prediction
+			enemy.prediction = prediction 
 		}
 
 
@@ -643,7 +643,6 @@ window.gameFunctions.gameUpdate = function () {
 			});
 					
 		// target = enemiesInSight.reduce((e1, e2) => (getDistance(mousePos, e1.pos) < getDistance(mousePos, e2.pos)) ? e1 : e2);
-
 		var i;
 		posListX = []
 		posListY = []
@@ -656,6 +655,17 @@ window.gameFunctions.gameUpdate = function () {
 		}
 		enemyIndex = distList.indexOf(Math.min(...distList))
 		target = enemiesInSight[enemyIndex]
+		if(target[obfuscate.netData].downed || target[obfuscate.netData].layer != game[obfuscate.activePlayer].layer)
+		{
+			if(enemiesInSight.length > 1){
+				enemiesInSight.splice(enemyIndex,1)
+				distList.splice(enemyIndex,1)
+				target = enemiesInSight[distList.indexOf(Math.min(...distList))]
+		}
+			else if(enemiesInSight.length == 1){
+				target = enemiesInSight[distList.indexOf(Math.min(...distList))]
+			}
+		}
 		processEnemy(target)
 	}
 
