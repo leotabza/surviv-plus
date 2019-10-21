@@ -655,7 +655,7 @@ window.gameFunctions.gameUpdate = function () {
 		target = enemiesInSight[enemyIndex]
 		if (target[obfuscate.netData].downed || target[obfuscate.netData].layer != game[obfuscate.activePlayer].layer) {
 			if(enemiesInSight.length == 1) {
-				target = enemiesInSight[0]
+				target = enemiesInSight[distList.indexOf(Math.min(...distList))]
 			}
 			else if (enemiesInSight.length > 1) {
 				enemiesInSight.splice(enemyIndex, 1)
@@ -675,10 +675,16 @@ window.gameFunctions.gameUpdate = function () {
 		// 			window.gameVars.Input.Mouse.AimActive = true;
 
 		// 			return;
-		// }		
-		spinListX = [curPlayer.pos.x, curPlayer.pos.x + 50, curPlayer.pos.x, curPlayer.pos.x - 50]
-		spinListY = [curPlayer.pos.y - 50, curPlayer.pos.y, curPlayer.pos.y + 50, curPlayer.pos.y]
+		// }	
+		//Cross spinbot number = 4
+// 		spinListX = [curPlayer.pos.x, curPlayer.pos.x + 50, curPlayer.pos.x, curPlayer.pos.x - 50]
+// 		spinListY = [curPlayer.pos.y - 50, curPlayer.pos.y, curPlayer.pos.y + 50, curPlayer.pos.y]
 
+		//square spinbot number = 8	
+		spinListX = [curPlayer.pos.x, curPlayer.pos.x + 1000, curPlayer.pos.x + 1000, curPlayer.pos.x + 1000, curPlayer.pos.x, curPlayer.pos.x - 1000, curPlayer.pos.x - 1000, curPlayer.pos.x - 1000]
+		spinListY = [curPlayer.pos.y + 1000, curPlayer.pos.y + 1000, curPlayer.pos.y, curPlayer.pos.y - 1000, curPlayer.pos.y - 1000, curPlayer.pos.y - 1000, curPlayer.pos.y, curPlayer.pos.y + 1000]
+		// spinListX = [curPlayer.pos.x, curPlayer.pos.x + 1000, curPlayer.pos.x + 1000, curPlayer.pos.x, curPlayer.pos.x - 1000, curPlayer.pos.x - 1000]
+		// spinListY = [curPlayer.pos.y - 1000, curPlayer.pos.y - 1000, curPlayer.pos.y + 1000, curPlayer.pos.y + 1000, curPlayer.pos.y + 1000, curPlayer.pos.y - 1000]
 		if(window.menu.UserSetting.shoot.spinBotEnabled){
 			window.gameVars.Input.Mouse.SpinActive = true
 		}
@@ -699,6 +705,7 @@ window.gameFunctions.gameUpdate = function () {
 			if (window.gameVars.Input.Cheat.AutoAimPressed == false && !window.gameVars.Input.Cheat.SpinPressed) {
 				window.gameVars.Input.Mouse.AimActive = true;
 				window.gameVars.Input.Mouse.AimPos = game[obfuscate.camera].pointToScreen({ x: pos.x + prediction.x, y: pos.y + prediction.y });
+			
 			}
 			else if (window.gameVars.Input.Cheat.AutoAimPressed == true || window.gameVars.Input.Cheat.SpinPressed) {
 				window.gameVars.Input.Mouse.AimActive = false;
@@ -712,11 +719,16 @@ window.gameFunctions.gameUpdate = function () {
 				window.gameVars.Input.Mouse.SpinActive = false
 				return;
 			}
-			window.gameVars.Input.Mouse.SpinPos = game[obfuscate.camera].pointToScreen({ x: spinListX[number], y: spinListY[number] })
-			number += 1
-			if (number == 4) {
+			if (number == 8) {
+				// spinListX.reverse()
+				// spinListY.reverse()
 				number = 0
 			}
+			window.gameVars.Input.Mouse.SpinPos = game[obfuscate.camera].pointToScreen({
+				x: spinListX[number], 
+				y: spinListY[number]
+			})
+			number += 1
 
 			return;
 		}
