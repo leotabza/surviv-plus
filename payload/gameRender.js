@@ -15,25 +15,25 @@ window.gameFunctions.gameRender = function(){
 		!roundTexture || !roundTexture.baseTexture)
 		return;
 
-// 	var updateObstacleAlpha = function(obstacle) {
-// 		if(!obstacle || !obstacle.img)
-// 			return;
+	var updateObstacleAlpha = function(obstacle) {
+		if(!obstacle || !obstacle.img)
+			return;
 		
-// 		var alpha = 1.0;
+		var alpha = 1.0;
 		
-// 		var setting = window.menu.UserSetting.look;
+		var setting = window.menu.UserSetting.look;
 		
-// 		if(obstacle.img.includes("map-tree"))
-// 			alpha = setting.ceilingAlphaEnabled ? setting.obstaclesAlphaTreeLevel : 1.0;
-// 		if(obstacle.img.includes("map-tree-04"))
-// 			alpha = 1.0;
-// 		if(obstacle.img.includes("map-bush"))
-// 			alpha = setting.ceilingAlphaEnabled ? setting.obstaclesAlphaBushLevel : 0.97;
-// 		if(obstacle.img.includes("map-table"))
-// 			alpha = setting.ceilingAlphaEnabled ? setting.obstaclesAlphaTableLevel : 1.0;
+		if(obstacle.img.includes("map-tree"))
+			alpha = setting.ceilingAlphaEnabled ? setting.obstaclesAlphaTreeLevel : 1.0;
+		if(obstacle.img.includes("map-tree-04"))
+			alpha = 1.0;
+		if(obstacle.img.includes("map-bush"))
+			alpha = setting.ceilingAlphaEnabled ? setting.obstaclesAlphaBushLevel : 0.97;
+		if(obstacle.img.includes("map-table"))
+			alpha = setting.ceilingAlphaEnabled ? setting.obstaclesAlphaTableLevel : 1.0;
 
-// 		obstacle.sprite.alpha = alpha;
-// 	}
+		obstacle.sprite.alpha = alpha;
+	}
 
 // 	var updateBuildingCeilingAplha = function(building) {
 // 		if(!building || !building.ceiling)
@@ -58,22 +58,22 @@ window.gameFunctions.gameRender = function(){
 // 			.forEach((s) => s.alpha = setting.ceilingAlphaLevel);
 // 	}
 	
-// 	var updateSmokeAplha = function(smoke) {
-// 		if(!smoke || !smoke.particle || !smoke.particle.sprite)
-// 			return;
+	var updateSmokeAplha = function(smoke) {
+		if(!smoke || !smoke.particle || !smoke.particle.sprite)
+			return;
 		
-// 		var setting = window.menu.UserSetting.look;
+		var setting = window.menu.UserSetting.look;
 
-// 		if(!setting.smokeAlphaEnabled)
-// 			return;
+		if(!setting.smokeAlphaEnabled)
+			return;
 		
-// 		smoke.particle.sprite.alpha *= setting.smokeAlphaLevel;
-// 	}
+		smoke.particle.sprite.alpha *= setting.smokeAlphaLevel;
+	}
 	// console.log("Console logging something!");
 	// console.log(game[obfuscate.smokeBarn]);
-// 	game[obfuscate.smokeBarn][obfuscate.smokePool][obfuscate.pool].forEach(updateSmokeAplha);
-// 	game[obfuscate.map][obfuscate.obstaclePool][obfuscate.pool].forEach(updateObstacleAlpha);
-// 	game[obfuscate.map][obfuscate.buildingPool][obfuscate.pool].forEach(updateBuildingCeilingAplha);
+	// game[obfuscate.smokeBarn][obfuscate.smokePool][obfuscate.pool].forEach(updateSmokeAplha);
+	game[obfuscate.map][obfuscate.obstaclePool][obfuscate.pool].forEach(updateObstacleAlpha);
+	// game[obfuscate.map][obfuscate.buildingPool][obfuscate.pool].forEach(updateBuildingCeilingAplha);
 
 	var updateTargetIndicator = function(player) {
 		if(!player || !player.prediction)
