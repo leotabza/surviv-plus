@@ -33,7 +33,7 @@
 					autoAimRestirctionEnabled: 		false,
 					autoAimRestirctionAngle:		20,
 					autoAimRestrictionCloseRange:	11,
-					autoAimPingCorrectionEnabled:	true,
+					autoAimPingCorrectionEnabled:	false,
 					// autoAimAntiAntiCheatEnabled: 	true,
 					// autoAimAntiAntiCheatInertia:	0.4,
 				},
