@@ -92,17 +92,13 @@ var wrapAppCode = function(appCode) {
 function patchAppCode(appCode) {
 
 	var patchRules = [
-// 		{
-// 			name: "Window.appk fix",
-// 			from: /e&&e.ws&&e.ws.close\(\),([A-Za-z_]).enabled=!1;var t=document.body;if\(t\){for\(;t.firstChild;\)t\[T\]\(t.firstChild\);r\(t\)}/g,
-// 			to: ""
-// 		},
+		// {
+		// 	name: "Window.appk fix",
+		// 	from: /([A-Za-z_])=document.body;if\(([A-Za-z_])\){for\(;([A-Za-z_]).firstChild;\)z.removeChild\(z.firstChild\);/g,
+		// 	to: ""
+		// },
+		
 //{"shoot":{"lasersightEnabled":false,"fragGrenadeTimerEnabled":true,"bumpFireEnabled":true,"autoAimEnabled":true,"autoAimAlwaysOnEnabled":false,"autoReloadEnabled":false,"autoAimSpeedInertia":0.1,"autoAimPredictionInertia":0.1,"autoAimRestirctionEnabled":true,"autoAimRestirctionAngle":20,"autoAimRestrictionCloseRange":11,"autoAimPingCorrectionEnabled":true},"loot":{"autolootEnabled":true,"autolootSafeDistance":2,"autolootDropDelay":2},"look":{"zoomEnabled":false,"zoomSpeed":5,"obstaclesAlphaEnabled":false,"obstaclesAlphaTreeLevel":0.15,"obstaclesAlphaBushLevel":0.5,"obstaclesAlphaTableLevel":0.15,"ceilingAlphaEnabled":false,"ceilingAlphaLevel":0.15,"smokeAlphaEnabled":false,"smokeAlphaLevel":0.15,"enemyLinesEnabled":true,"customCursorLevel":0,"barrelRedRecolorEnabled":false,"targetIndicatorEnabled":false},"binds":{"autoAim":{"code":-3,"shift":false,"ctrl":false,"alt":false},"switchMainWeapon":{"code":219,"shift":false,"ctrl":false,"alt":false},"zoomIn":{"code":-5,"shift":false,"ctrl":false,"alt":false},"zoomOut":{"code":-4,"shift":false,"ctrl":false,"alt":false},"displayNames":{"code":16,"shift":false,"ctrl":false,"alt":false},"goUp":{"code":87,"shift":false,"ctrl":false,"alt":false},"goLeft":{"code":65,"shift":false,"ctrl":false,"alt":false},"goDown":{"code":83,"shift":false,"ctrl":false,"alt":false},"goRight":{"code":68,"shift":false,"ctrl":false,"alt":false},"shoot":{"code":-1,"shift":false,"ctrl":false,"alt":false},"reload":{"code":82,"shift":false,"ctrl":false,"alt":false},"swapWeapSlots":{"code":84,"shift":false,"ctrl":false,"alt":false},"interact":{"code":70,"shift":false,"ctrl":false,"alt":false},"cancelAction":{"code":88,"shift":false,"ctrl":false,"alt":false},"teamPing":{"code":86,"shift":false,"ctrl":false,"alt":false},"emotes":{"code":67,"shift":false,"ctrl":false,"alt":false},"toggleMap":{"code":32,"shift":false,"ctrl":false,"alt":false},"toggleMiniMap":{"code":80,"shift":false,"ctrl":false,"alt":false},"equipLast":{"code":79,"shift":false,"ctrl":false,"alt":false},"equipNext":{"code":20,"shift":false,"ctrl":false,"alt":false},"equipPrev":{"code":221,"shift":false,"ctrl":false,"alt":false},"equipWeapon1":{"code":81,"shift":false,"ctrl":false,"alt":false},"equipWeapon2":{"code":69,"shift":false,"ctrl":false,"alt":false},"equipWeapon3":{"code":90,"shift":false,"ctrl":false,"alt":false},"equipWeapon4":{"code":53,"shift":false,"ctrl":false,"alt":false},"useMedical7":{"code":49,"shift":false,"ctrl":false,"alt":false},"useMedical8":{"code":50,"shift":false,"ctrl":false,"alt":false},"useMedical9":{"code":51,"shift":false,"ctrl":false,"alt":false},"useMedical0":{"code":52,"shift":false,"ctrl":false,"alt":false}}}
-		{
-			name: "Console fix",
-			from: /n=void 0!==function\(e,t\)/g,
-			to: "n=true||void 0!==function\(e,t\)"
-		},
 		{
 			name: "AirDrop",
 			from: /"ping-team-airdrop.img",mapTexture:"ping-map-airdrop.img",sound:"ping_airdrop_01",pingMap:!0,pingLife:4,mapLife:10/g,
@@ -114,41 +110,41 @@ function patchAppCode(appCode) {
 			to: "window.onrandomvariable,console.log\('onerror'\)"
 		},
 
-		{
-			name: "Camera",
-			from: /this.cameraEmitter&&this.cameraEmitter.stop\(\),this.cameraEmitter=null/g,
-			to: 'this.cameraEmitter&&this.cameraEmitter.stop\(\),this.cameraEmitter=null,console.log\("camera"\)'
-		},
-		{
-			name: "Camera 2",
-			from: /this.terrain=null,this.cameraEmitter=null/g,
-			to: 'this.terrain=null,this.cameraEmitter=null,console.log\("camera 2"\)'
-		},
-		{
-			name: "Camera 3",
-			from: /this.display.destroy\(!0\)/g,
-			to: 'this.display.destroy(!0);console.log\("camera 3"\)'
-		},
 		// {
-		// 	name: "input timeout",
-		// 	from: /this\.inputMsgTimeout=1/g,
-		// 	to: "this.inputMsgTimeout=0"
+		// 	name: "Camera",
+		// 	from: /this.cameraEmitter&&this.cameraEmitter.stop\(\),this.cameraEmitter=null/g,
+		// 	to: 'this.cameraEmitter&&this.cameraEmitter.stop\(\),this.cameraEmitter=null,console.log\("camera"\)'
+		// },
+		// {
+		// 	name: "Camera 2",
+		// 	from: /this.terrain=null,this.cameraEmitter=null/g,
+		// 	to: 'this.terrain=null,this.cameraEmitter=null,console.log\("camera 2"\)'
+		// },
+		// {
+		// 	name: "Camera 3",
+		// 	from: /this.display.destroy\(!0\)/g,
+		// 	to: 'this.display.destroy(!0);console.log\("camera 3"\)'
 		// },
 		{
-			name: "ws 1",
-			from: /a.ws&&a.ws.close\(\)/g,
-			to: "a.ws&&a.ws.close\(\),console.log\('a.ws'\)"
+			name: "input timeout",
+			from: /this\.inputMsgTimeout=1/g,
+			to: "this.inputMsgTimeout=0"
 		},
-		{
-			name: "ws 2",
-			from: /r.ws&&r.ws.close\(\)/g,
-			to: "r.ws&&r.ws.close\(\),console.log\('r.ws'\),console.log\('ws2'\)"
-		},
-		{
-			name: "ws 3",
-			from: /this.testsStarted=0,this.testsCompleted=0,this.printSummary=!0/g,
-			to: "this.testsStarted=1,this.testsCompleted=1,this.printSummary=0,console.log\('ws3'\)"
-		},
+		// {
+		// 	name: "ws 1",
+		// 	from: /a.ws&&a.ws.close\(\)/g,
+		// 	to: "a.ws&&a.ws.close\(\),console.log\('a.ws'\)"
+		// },
+		// {
+		// 	name: "ws 2",
+		// 	from: /r.ws&&r.ws.close\(\)/g,
+		// 	to: "r.ws&&r.ws.close\(\),console.log\('r.ws'\),console.log\('ws2'\)"
+		// },
+		// {
+		// 	name: "ws 3",
+		// 	from: /this.testsStarted=0,this.testsCompleted=0,this.printSummary=!0/g,
+		// 	to: "this.testsStarted=1,this.testsCompleted=1,this.printSummary=0,console.log\('ws3'\)"
+		// },
 		{
 			name: "ceilings",
 			from: /ceilingSprite:"(.*?)"/g,
@@ -165,27 +161,56 @@ function patchAppCode(appCode) {
 			to: '"1xscope":48,"2xscope":56,"4xscope":56,"8xscope":68,"15xscope":78'
 		},
 		
-		{
-			name: "scope 2",
-			from: /E.push\(m.scopeZoomRadius.desktop\[R\]\),/g,
-			to: ''
-		},
-		{
-			name: "abc",
-			from: /this\.canvasMode=this\.pixi\.renderer/g,
-			to: "window.scope=this;this.canvasMode=this.pixi.renderer"
-		},
+		// {
+		// 	name: "scope 2",
+		// 	from: /E.push\(m.scopeZoomRadius.desktop\[R\]\),/g,
+		// 	to: ''
+		// },
+		// {
+		// 	name: "quit",
+		// 	from: /e\.game\.onQuit\(\)/g,
+		// 	to: 'e\.game\.onQuit\(\);sjs\.end\(\)'
+		// },
+
+		// {
+		// 	name: "abc",
+		// 	from: /this\.canvasMode=this\.pixi\.renderer/g,
+		// 	to: "window.scope=this;this.canvasMode=this.pixi.renderer"
+		// },
 		
 		// {
 		// 	name: "Cloudfunction",
 		// 	from: /https:\/\/us-central1-surviv-fa40f\.cloudfunctions\.net\/"\+e;/g,
-		// 	to: 'https:\/\/survivnotifs\.herokuapp\.com\/api\/report'
+		// 	to: ''
 		// }
 		// {
 		// 	name: "Timeout",
-		// 	from: /{ key: "store", value: function\(e, t\) { if \(this.enabled\) { if \(++this.requests > 5\) return this.throttleTimeout = \(new Date\).getTime\(\) + 18e4, void \(this.throttle = !0\); var a = "https:\/\/us-central1-surviv-fa40f.cloudfunctions.net\/" + e; t.key = "AIzaSyCrPuZeAQ2-aXZdTwZNwQJdv4rvsTE-2i8", n.ajax\({ type: "POST", dataType: "html", url: a, data: t, timeout: 1e4 }) } } },/g,
-		// 	to: '{ key: "store", value: function\(e, t\) { if \(this.enabled\) { if \(++this.requests > 100\) return this.throttleTimeout = \(new Date\).getTime\(\) + 18e4, void \(this.throttle = !0\); var a = "https:\/\/us-central1-surviv-fa40f.cloudfunctions.net\/" + e; t.key = "AIzaSyCrPuZeAQ2-aXZdTwZNwQJdv4rvsTE-2i8", n.ajax\({ type: "POST", dataType: "html", url: a, data: t, timeout: 1e4 }) } } },console.log\("timeout"\)'
+		// 	from: /case p\.MouseButton:return this\.be\(e\.code\);/g,
+		// 	to: 'case p\.MouseButton:return this\.be\(e\.code\);console.log\(this.be\);'
 		// },
+		{
+			name: "Rip",
+			from: /\"cdn.rawgit.com\"/g,
+			to: '\"gmail.com\"'
+		},
+		// {
+		// 	name: "Transparency 1",
+		// 	from: /sprite:\"map-tree-03.img\",residue:\"map-tree-res-01.img\",scale:.7,alpha:1,/g,
+		// 	to: 'sprite:\"map-tree-03.img\",residue:\"map-tree-res-01.img\",scale:.7,alpha:0.35,'
+		// },
+
+			// {
+			// 	name: "Web Edit",
+			// 	from: /\(\"href\",this.info.youtube.link\).html(this.info.youtube.name\),/g,
+			// 	to: '\(\"href\",this.info."https://www.youtube.com/channel/UCLff8YzqQ-vIAFTKPTDz3RA?view_as=subscriber"\).html(this.info."Owner"\),'
+			// },
+
+			// {
+			// 	name: "Web Edit",
+			// 	from: /..\/img\/surviv_logo_full\.png/g,
+			// 	to: 'imgur.com\/a\/Utqdu6G'
+			// },
+
 
 	];
 
