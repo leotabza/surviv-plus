@@ -676,9 +676,6 @@ window.gameFunctions.gameUpdate = function () {
 
 		// 			return;
 		// }	
-		//Cross spinbot number = 4
-// 		spinListX = [curPlayer.pos.x, curPlayer.pos.x + 50, curPlayer.pos.x, curPlayer.pos.x - 50]
-// 		spinListY = [curPlayer.pos.y - 50, curPlayer.pos.y, curPlayer.pos.y + 50, curPlayer.pos.y]
 
 		//square spinbot number = 8	
 		spinListX = [curPlayer.pos.x, curPlayer.pos.x + 1000, curPlayer.pos.x + 1000, curPlayer.pos.x + 1000, curPlayer.pos.x, curPlayer.pos.x - 1000, curPlayer.pos.x - 1000, curPlayer.pos.x - 1000]
