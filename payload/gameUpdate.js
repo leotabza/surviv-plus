@@ -8,6 +8,10 @@ window.gameFunctions.gameSendMessage = function (messageCode, messageData) {
 number = 0
 processes = []
 
+var angle = 0;
+var speed = 10;
+
+disableSpin = false
 
 positions = []
 
@@ -420,8 +424,11 @@ window.gameFunctions.gameUpdate = function () {
 	var autoFireGuns = ["frag", "fists", "flare_gun", "mk12", "mp220", "m870", "sv98", "awc", "m39", "mosin", "smoke", "saiga", "m9", "m9_dual", "ot38", "ot38_dual", "deagle", "deagle_dual", "spas12", "garand", "karambit_rugged", "karambit_prismatic",
 		"bayonet_rugged", "bayonet_woodland", "huntsman_rugged", "huntsman_burnished", "woodaxe", "hook", "pan", "karambit_drowned", "woodaxe_bloody", "m4a1", "bowie_vintage", "bowie_frontier", "usas", "mirv", "bar", "fireaxe", "m1911", "m1911_dual", "m1a1", "m1100",
 		"katana", "scorpion", "stonehammer", "model94", "snowball", "ots38_dual", "ots38", "katana_rusted", "kukri_trad", "an94", "machete_taiga", "m1014", "katana_orchid", "strobe", "naginata", "potato", "flare_gun_dual", "sledgehammer", "p30l", "p30l_dual", "bonesaw_rusted", "potato_cannon", "scout",
-		"mkg45", "blr", "svd", "vss", "scarssr", "186", "potato_cannonball"
+		"mkg45", "blr", "svd", "vss", "scarssr", "l86", "potato_cannonball"
 	];
+	
+	var snipers = ["m870", "sv98", "awc", "mosin", "spas12", "model94", "potato_cannon", "scout", "blr"]
+
 	var grenadeTimerWarning = 1.05;
 
 	// var guns = [];
@@ -470,9 +477,25 @@ window.gameFunctions.gameUpdate = function () {
 	}
 
 	//quickswitch use later
-	// var invWeapon1Name = curPlayer[obfuscate.localData].weapons["0"].name;
-	// var invWeapon2Name = curPlayer[obfuscate.localData].weapons["1"].name;
+	var invWeapon1Name = curPlayer[obfuscate.localData].weapons["0"].type
+	var invWeapon2Name = curPlayer[obfuscate.localData].weapons["1"].type;
 
+	//switch
+
+	var switchWeapon = function () {
+		if(!game[obfuscate.input].keys["75"]) {
+			setTimeout(function () {
+				game[obfuscate.input].keys["75"] = true;
+				setTimeout(function () {
+					delete game[obfuscate.input].keys["75"]
+				}, guns[curWeapon].switchDelay * 100);
+			}, guns[curWeapon].switchDelay * 100);
+		}
+	}
+
+	if (game[obfuscate.input].mouseButton && snipers.includes(curWeapon)){	
+		switchWeapon()
+	}
 
 	var fullAmmoGuns = {
 		"mp5": 30, "mac10": 32, "ump9": 30, "vector": 33, "famas": 25, "hk416": 30, "m4a1": 30, "mk12": 20, "m249": 100, "qbb97": 75, "ak47": 30, "scar": 20,
@@ -489,28 +512,6 @@ window.gameFunctions.gameUpdate = function () {
 
 	// if(window.gameVars.Input.Cheat. == true){
 
-	//Switch weapons
-	var pressOne = function () {
-		if (!game[obfuscate.input].keys["49"]) {
-			setTimeout(function () {
-				game[obfuscate.input].keys["49"] = true;
-				setTimeout(function () {
-					delete game[obfuscate.input].keys["49"]
-				}, 100);
-			}, 50);
-		}
-	}
-
-	var pressTwo = function () {
-		if (!game[obfuscate.input].keys["50"]) {
-			setTimeout(function () {
-				game[obfuscate.input].keys["50"] = true;
-				setTimeout(function () {
-					delete game[obfuscate.input].keys["50"]
-				}, 200);
-			}, 50);
-		}
-	}
 	// var pressReload = function () {
 	// 	if(!game[obfuscate.input].keys["82"]) {
 	// 		setTimeout(function () {
@@ -531,7 +532,6 @@ window.gameFunctions.gameUpdate = function () {
 	// 			}
 	// 		}	
 	// 	}
-
 
 	var weaponSwitcher = function () {
 		if (curPlayer[obfuscate.localData].curWeapIdx == 2 || curPlayer[obfuscate.localData].curWeapIdx == 1) {
@@ -573,8 +573,8 @@ window.gameFunctions.gameUpdate = function () {
 
 	var currentZoom = window.gameVars.ZoomLevel;
 
-	currentZoom *= 1.0 + window.menu.UserSetting.look.zoomSpeed / 50 * window.gameVars.Input.Cheat.GetZoomDelta();
-	currentZoom = currentZoom < 0.1 ? 0.1 : currentZoom > 1.0 ? 1.0 : currentZoom;
+	currentZoom *= 1.0 + window.menu.UserSetting.look.zoomSpeed / 100 * window.gameVars.Input.Cheat.GetZoomDelta();
+	// currentZoom = currentZoom < 0.1 ? 0.1 : currentZoom > 1.0 ? 1.0 : currentZoom;
 
 	if (!window.gameVars.Menu && window.menu.UserSetting.look.zoomEnabled)
 		window.gameVars.ZoomLevel = currentZoom;
@@ -612,7 +612,6 @@ window.gameFunctions.gameUpdate = function () {
 	if (!window.gameVars.Input.Cheat.AutoAimPressed == true && enimies.length != 0)
 	// if(window.menu.UserSetting.shoot.autoAimEnabled && window.gameVars.Input.Cheat.AutoAimPressed)
 	{
-
 
 		var mousePos = game[obfuscate.camera].pointToScreen(window.gameVars.Input.Mouse.Pos);
 
@@ -669,19 +668,31 @@ window.gameFunctions.gameUpdate = function () {
 
 	window.gameVars.Game.Target = target;
 	(function () {
-		// 		spin = true
-		// 		if(!window.menu.UserSetting.shoot.spinBotEnabled) {
-		// 			spin = false
-		// 			window.gameVars.Input.Mouse.AimActive = true;
 
-		// 			return;
-		// }	
+		//Cross spinbot number = 4
+		// spinListX = [curPlayer.pos.x, curPlayer.pos.x + 50, curPlayer.pos.x, curPlayer.pos.x - 50]
+		// spinListY = [curPlayer.pos.y - 50, curPlayer.pos.y, curPlayer.pos.y + 50, curPlayer.pos.y]
 
 		//square spinbot number = 8	
-		spinListX = [curPlayer.pos.x, curPlayer.pos.x + 1000, curPlayer.pos.x + 1000, curPlayer.pos.x + 1000, curPlayer.pos.x, curPlayer.pos.x - 1000, curPlayer.pos.x - 1000, curPlayer.pos.x - 1000]
-		spinListY = [curPlayer.pos.y + 1000, curPlayer.pos.y + 1000, curPlayer.pos.y, curPlayer.pos.y - 1000, curPlayer.pos.y - 1000, curPlayer.pos.y - 1000, curPlayer.pos.y, curPlayer.pos.y + 1000]
-		// spinListX = [curPlayer.pos.x, curPlayer.pos.x + 1000, curPlayer.pos.x + 1000, curPlayer.pos.x, curPlayer.pos.x - 1000, curPlayer.pos.x - 1000]
-		// spinListY = [curPlayer.pos.y - 1000, curPlayer.pos.y - 1000, curPlayer.pos.y + 1000, curPlayer.pos.y + 1000, curPlayer.pos.y + 1000, curPlayer.pos.y - 1000]
+		// spinListX = [curPlayer.pos.x, curPlayer.pos.x + 1000, curPlayer.pos.x + 1000, curPlayer.pos.x + 1000, curPlayer.pos.x, curPlayer.pos.x - 1000, curPlayer.pos.x - 1000, curPlayer.pos.x - 1000]
+		// spinListY = [curPlayer.pos.y + 1000, curPlayer.pos.y + 1000, curPlayer.pos.y, curPlayer.pos.y - 1000, curPlayer.pos.y - 1000, curPlayer.pos.y - 1000, curPlayer.pos.y, curPlayer.pos.y + 1000]
+		
+		//triangle spinbot number = 12
+		// spinListX = [curPlayer.pos.x, curPlayer.pos.x + 1000, curPlayer.pos.x - 1000,
+		// curPlayer.pos.x + 1000, curPlayer.pos.x - 1000, curPlayer.pos.x - 1000,
+		// curPlayer.pos.x, curPlayer.pos.x - 1000, curPlayer.pos.x + 1000,
+		// curPlayer.pos.x - 1000, curPlayer.pos.x + 1000, curPlayer.pos.x + 1000,
+		// ]
+
+		// spinListY = [curPlayer.pos.y + 1000, curPlayer.pos.y - 1000, curPlayer.pos.y - 1000,
+		// curPlayer.pos.y, curPlayer.pos.y - 1000, curPlayer.pos.y + 1000,
+		// curPlayer.pos.y - 1000, curPlayer.pos.y + 1000, curPlayer.pos.y + 1000,
+		// curPlayer.pos.y, curPlayer.pos.y + 1000, curPlayer.pos.y - 1000,
+		// ]
+		
+		// console.log(spinListX.length, spinListY.length)
+
+
 		if(window.menu.UserSetting.shoot.spinBotEnabled){
 			window.gameVars.Input.Mouse.SpinActive = true
 		}
@@ -702,7 +713,11 @@ window.gameFunctions.gameUpdate = function () {
 			if (window.gameVars.Input.Cheat.AutoAimPressed == false && !window.gameVars.Input.Cheat.SpinPressed) {
 				window.gameVars.Input.Mouse.AimActive = true;
 				window.gameVars.Input.Mouse.AimPos = game[obfuscate.camera].pointToScreen({ x: pos.x + prediction.x, y: pos.y + prediction.y });
-			
+
+				game[obfuscate.input][obfuscate.mousePosition].x = window.gameVars.Input.Mouse.AimPos.x;
+		
+				game[obfuscate.input][obfuscate.mousePosition].y = window.gameVars.Input.Mouse.AimPos.y;
+
 			}
 			else if (window.gameVars.Input.Cheat.AutoAimPressed == true || window.gameVars.Input.Cheat.SpinPressed) {
 				window.gameVars.Input.Mouse.AimActive = false;
@@ -716,25 +731,32 @@ window.gameFunctions.gameUpdate = function () {
 				window.gameVars.Input.Mouse.SpinActive = false
 				return;
 			}
-			if (number == 8) {
+
+			if (number == 361) {
 				// spinListX.reverse()
 				// spinListY.reverse()
 				number = 0
 			}
+
 			window.gameVars.Input.Mouse.SpinPos = game[obfuscate.camera].pointToScreen({
-				x: spinListX[number], 
-				y: spinListY[number]
+				x: Math.cos(number) * 999999 + window.innerWidth,
+				y: Math.sin(number) * 999999 + window.innerHeight
 			})
+
+			game[obfuscate.input][obfuscate.mousePosition].x = window.gameVars.Input.Mouse.SpinPos.x;
+
+			game[obfuscate.input][obfuscate.mousePosition].y = window.gameVars.Input.Mouse.SpinPos.y;
+	
 			number += 1
 
 			return;
-		}
+			
+	}
 
-
-		else if (window.gameVars.Input.Cheat.SpinPressed || disableSpin) {
-			window.gameVars.Input.Mouse.SpinActive = false
-			window.gameVars.Input.Mouse.AimActive = false;
-		}
+		// else if (window.gameVars.Input.Cheat.SpinPressed || disableSpin) {
+		// 	window.gameVars.Input.Mouse.SpinActive = false
+		// 	window.gameVars.Input.Mouse.AimActive = false;
+		// }
 		
 	}
 	)();
