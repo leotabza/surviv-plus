@@ -1,34 +1,34 @@
-var runScript = function(scriptName, callOnLoad) {
+var runScript = function (scriptName, callOnLoad) {
 	try {
-		var e =  document.createElement('script');
+		var e = document.createElement('script');
 		e.src = chrome.extension.getURL(scriptName);
 		e.setAttribute('crossorigin', 'anonymous');
 		(document.head || document.documentElement).appendChild(e);
-		e.onload = function() {
+		e.onload = function () {
 			e.parentNode.removeChild(e);
-			if(callOnLoad)
+			if (callOnLoad)
 				callOnLoad.call(this);
 		};
-	} catch (e) {}
+	} catch (e) { }
 };
 
-var loadFile = function(fileName) {
-	try{
+var loadFile = function (fileName) {
+	try {
 		var request = new XMLHttpRequest();
 		request.open('GET', chrome.extension.getURL(fileName), false);
-		request.send(null);  
-		if (request.status === 200) {  
-		  return request.responseText;  
+		request.send(null);
+		if (request.status === 200) {
+			return request.responseText;
 		}
 	}
-	catch(e) {}
+	catch (e) { }
 	return "";
 };
 
-(function() {
+(function () {
 	try {
-		var e =  document.createElement("script");
-		
+		var e = document.createElement("script");
+
 		var menuHtml = loadFile('payload/menu.html');
 		var helpEnHtml = loadFile('payload/help-en.html');
 		var helpRuHtml = loadFile('payload/help-ru.html');
@@ -40,16 +40,16 @@ var loadFile = function(fileName) {
 			"helpRuHtml: `" + helpRuHtml + "`," +
 			"counterHtml: `" + counterHtml + "`," +
 			"};";
-			
+
 		e.setAttribute('type', 'text/javascript');
 		e.setAttribute('crossorigin', 'anonymous');
 		e.innerHTML = code;
-		
+
 		(document.head || document.documentElement).appendChild(e);
-		e.onload = function() {
+		e.onload = function () {
 			e.parentNode.removeChild(e);
 		};
-	} catch (e) {}
+	} catch (e) { }
 })();
 
 // payload vars
@@ -64,9 +64,9 @@ runScript('payload/gameUpdate.js');
 runScript('payload/gameRender.js');
 runScript('payload/pingOverride.js');
 
-window.addEventListener("load", function load(event){
-    window.removeEventListener("load", load, false); 
-	
+window.addEventListener("load", function load(event) {
+	window.removeEventListener("load", load, false);
+
 	// injection point
 	runScript('webpack_override.js');
 
@@ -75,7 +75,7 @@ window.addEventListener("load", function load(event){
 		() => {
 			runScript('payload/menuAppearance.js');
 			runScript('payload/documentChange.js');
-	});
-},false);
+		});
+}, false);
 
 
