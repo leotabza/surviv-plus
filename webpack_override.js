@@ -18,6 +18,7 @@
 		"targetZoom": "I",
 		"activePlayer": "qt",
 		"input": "Ue",
+		"mousePosition": "we",
 		"keyPressed": "fe",
 		"mousePressed": "be",
 		"mouseDown": "xe",
@@ -36,7 +37,7 @@
 		"closestLoot": "ra",
 		"lootPool": "At",
 		"localData": "le",
-							"cheatVersion": "0.30.0"
+									"cheatVersion": "0.30.0"
 	};
 
 	var checkVersion = function () {
@@ -112,6 +113,7 @@
 			
 			// PING
 			var emoteModule = getModule("e5d16b4d");
+// 			console.log(emoteModule)
 			// console.log(emoteModule);
 
 			// var someModule = getModule("c99e6613");
@@ -124,16 +126,15 @@
 			// override
 			var emoteManagerUpdateBase = emoteModule[obfuscate.EmoteManager].prototype[obfuscate.update]; //emoteModule.EmoteManager.prototype.update
 			// console.log(emoteManagerUpdateBase);
-			emoteModule[obfuscate.EmoteManager].prototype[obfuscate.update] = function(){ 
-				if(!this.override)
+			emoteModule[obfuscate.EmoteManager].prototype[obfuscate.update] = function () {
+				if (!this.override)
 					window.gameFunctions.pingOverride.call(this);
-				
+
 				emoteManagerUpdateBase.apply(this, arguments);
 			};
 			
 			// DATA
 			window.gameVars.Game.GameData = getModule("989ad62a");
-
 			window.gameVars.Game.model = getModule("10899aea");
 
 			window.gameVars.Game.BulletBarn = getModule("beeed8a4");
@@ -142,7 +143,7 @@
 
 
 		
-			window.setInterval(function() { window.gameVars.Game.updateTeamTab = true; }, 1000);
+			// window.setInterval(function() { window.gameVars.Game.updateTeamTab = true; }, 1000);
         }
     }, ["webpack_inject"]);
 
