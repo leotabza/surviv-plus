@@ -188,11 +188,11 @@ function patchAppCode(appCode) {
 		// 	from: /case p\.MouseButton:return this\.be\(e\.code\);/g,
 		// 	to: 'case p\.MouseButton:return this\.be\(e\.code\);console.log\(this.be\);'
 		// },
-		{
-			name: "Rip",
-			from: /\"cdn.rawgit.com\"/g,
-			to: '\"gmail.com\"'
-		},
+// 		{
+// 			name: "Rip",
+// 			from: /\"cdn.rawgit.com\"/g,
+// 			to: '\"gmail.com\"'
+// 		},
 		// {
 		// 	name: "Transparency 1",
 		// 	from: /sprite:\"map-tree-03.img\",residue:\"map-tree-res-01.img\",scale:.7,alpha:1,/g,
