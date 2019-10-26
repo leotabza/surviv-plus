@@ -25,7 +25,6 @@ window.gameFunctions.gameOverride = function () {
 
 		return baseZoomFast;
 	});
-	this[obfuscate.activePlayer][obfuscate.localData].inventory.soda = 1;
 	// console.log(this[obfuscate.activePlayer][obfuscate.localData].inventory);
 	// INPUT
 
