@@ -6,37 +6,42 @@
 	}
 	
 	window.obfuscate = {
-		"mainModule": "aa",
+		"mainModule": "ga",
 		"init": "o",
 		"free": "n",
 		"update": "m",
-		"render": "Ut",
-		"sendMessage": "ta",
-		"processGameUpdate": "Gt",
-		"EmoteManager": "Pt",
-		"camera": "se",
+		"render": "ta",
+		"sendMessage": "ua",
+		"processGameUpdate": "ra",
+		"EmoteManager": "Lt",
+		"camera": "ne",
 		"targetZoom": "I",
-		"activePlayer": "qt",
-		"input": "Ue",
-		"mousePosition": "we",
-		"keyPressed": "fe",
-		"mousePressed": "be",
-		"mouseDown": "xe",
-		"map": "ot",
-		"obstaclePool": "ye",
-		"buildingPool": "Ot",
-		"pool": "Be",
-		"playerBarn": "nt",
-		"playerPool": "Ie",
-		"playerInfo": "oa",
-		"activeId": "Rt",
-		"objectCreator": "Bt",
-		"netData": "ne",
-		"pieTimer": "Mt",
-		"lootBarn": "St",
-		"closestLoot": "ra",
-		"lootPool": "At",
-		"localData": "le",
+		"activePlayer": "Gt",
+		"input": "Qe",
+		"mousePosition": "be",
+		"keyPressed": "xe",
+		"mousePressed": "Se",
+		"mouseDown": "ze",
+		"map": "ut",
+		"obstaclePool": "_e",
+		"buildingPool": "jt",
+		"pool": "Ve",
+		"weapons": "Oe",
+		"curWeapIdx": "Ee",
+		"playerBarn": "yt",
+		"playerPool": "Pe",
+		"playerInfo": "_a",
+		"layer": "ma",
+		"dead": "pe",
+		"downed": "va",
+		"activeId": "Ut",
+		"objectCreator": "Vt",
+		"netData": "he",
+		"pieTimer": "Rt",
+		"lootBarn": "Ct",
+		"closestLoot": "ya",
+		"lootPool": "Ft",
+		"localData": "me",
 									"cheatVersion": "0.30.0"
 	};
 
@@ -113,7 +118,7 @@
 			
 			// PING
 			var emoteModule = getModule("e5d16b4d");
-// 			console.log(emoteModule)
+			// console.log(emoteModule)
 			// console.log(emoteModule);
 
 			// var someModule = getModule("c99e6613");
