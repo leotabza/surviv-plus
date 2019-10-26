@@ -175,7 +175,6 @@ window.gameFunctions.gameUpdate = function () {
 		var selfTeamId = game[obfuscate.playerBarn][obfuscate.playerInfo][game[obfuscate.activeId]].teamId;
 		var objectIds = Object.keys(game[obfuscate.objectCreator].idToObj);
 		var playerIds = Object.keys(game[obfuscate.playerBarn][obfuscate.playerInfo]);
-
 		var allPlayers = game[obfuscate.playerBarn][obfuscate.playerInfo];
 		var firstPlayerId = Object.keys(allPlayers)[0];
 		var firstPlayerObj = game[obfuscate.objectCreator].idToObj[firstPlayerId];
@@ -229,14 +228,15 @@ window.gameFunctions.gameUpdate = function () {
 			return isTmmt;
 		}
 
+		
 		return playerIds
 			.filter(function (id) {
 				var playerObject = game[obfuscate.objectCreator].idToObj[id];
 				return playerObject &&
 					(!isTeammate(id, playerObject)) &&
-					(!playerObject[obfuscate.netData].dead) &&
-					// (!playerObject[obfuscate.netData].downed) &&
-					// (playerObject.layer == game[obfuscate.activePlayer].layer) &&
+					(!playerObject[obfuscate.netData][obfuscate.dead]) &&
+					// (!playerObject[obfuscate.netData][obfuscate.downed]) &&
+					// (playerObject[obfuscate.layer] == game[obfuscate.activePlayer][obfuscate.layer]) &&
 					id != selfId;
 			})
 			.map(function (id) {
@@ -465,20 +465,21 @@ window.gameFunctions.gameUpdate = function () {
 
 	var gunTypes = window.gameVars.Game.GunTypes
 
-	var curWeapon = curPlayer[obfuscate.localData].weapons[curPlayer[obfuscate.localData].curWeapIdx].type
+	var curWeapon = curPlayer[obfuscate.localData][obfuscate.weapons][curPlayer[obfuscate.localData][[obfuscate.curWeapIdx]]].type
+
+	// console.log(curWeapon)
 
 	var curBulletSpeed = 0;
 
-	if (curPlayer[obfuscate.localData].curWeapIdx < 2) {
+	if (curPlayer[obfuscate.localData][[obfuscate.curWeapIdx]] < 2) {
 		curBulletSpeed = bullets[guns[curWeapon].bulletType].speed
 	}
 	else {
 		curBulletSpeed = 0
 	}
 
-	//quickswitch use later
-	var invWeapon1Name = curPlayer[obfuscate.localData].weapons["0"].type
-	var invWeapon2Name = curPlayer[obfuscate.localData].weapons["1"].type;
+	// var invWeapon1Name = curPlayer[obfuscate.localData].weapons["0"].type
+	// var invWeapon2Name = curPlayer[obfuscate.localData].weapons["1"].type;
 
 	//switch
 
@@ -533,21 +534,21 @@ window.gameFunctions.gameUpdate = function () {
 	// 		}	
 	// 	}
 
-	var weaponSwitcher = function () {
-		if (curPlayer[obfuscate.localData].curWeapIdx == 2 || curPlayer[obfuscate.localData].curWeapIdx == 1) {
-			pressOne();
-			return;
-		}
+	// var weaponSwitcher = function () {
+	// 	if (curPlayer[obfuscate.localData][[obfuscate.curWeapIdx]] == 2 || curPlayer[obfuscate.localData][[obfuscate.curWeapIdx]] == 1) {
+	// 		pressOne();
+	// 		return;
+	// 	}
 
-		if (curPlayer[obfuscate.localData].curWeapIdx == 0) {
-			pressTwo();
-			return;
-		}
-	}
+	// 	if (curPlayer[obfuscate.localData][[obfuscate.curWeapIdx]] == 0) {
+	// 		pressTwo();
+	// 		return;
+	// 	}
+	// }
 
-	if (window.gameVars.Input.Cheat.SwitchWeaponFirst) {
-		weaponSwitcher();
-	}
+	// if (window.gameVars.Input.Cheat.SwitchWeaponFirst) {
+	// 	weaponSwitcher();
+	// }
 
 
 	// if(window.menu.UserSetting.shoot.autoReloadEnabled) {
@@ -652,7 +653,7 @@ window.gameFunctions.gameUpdate = function () {
 		}
 		enemyIndex = distList.indexOf(Math.min(...distList))
 		target = enemiesInSight[enemyIndex]
-		if (target[obfuscate.netData].downed || target[obfuscate.netData].layer != game[obfuscate.activePlayer].layer) {
+		if (target[obfuscate.netData][obfuscate.downed] || target[obfuscate.netData][obfuscate.layer] != curPlayer[obfuscate.netData][obfuscate.layer]) {
 			if(enemiesInSight.length == 1) {
 				target = enemiesInSight[distList.indexOf(Math.min(...distList))]
 			}
