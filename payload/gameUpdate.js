@@ -424,7 +424,7 @@ window.gameFunctions.gameUpdate = function () {
 	var autoFireGuns = ["frag", "fists", "flare_gun", "mk12", "mp220", "m870", "sv98", "awc", "m39", "mosin", "smoke", "saiga", "m9", "m9_dual", "ot38", "ot38_dual", "deagle", "deagle_dual", "spas12", "garand", "karambit_rugged", "karambit_prismatic",
 		"bayonet_rugged", "bayonet_woodland", "huntsman_rugged", "huntsman_burnished", "woodaxe", "hook", "pan", "karambit_drowned", "woodaxe_bloody", "m4a1", "bowie_vintage", "bowie_frontier", "usas", "mirv", "bar", "fireaxe", "m1911", "m1911_dual", "m1a1", "m1100",
 		"katana", "scorpion", "stonehammer", "model94", "snowball", "ots38_dual", "ots38", "katana_rusted", "kukri_trad", "an94", "machete_taiga", "m1014", "katana_orchid", "strobe", "naginata", "potato", "flare_gun_dual", "sledgehammer", "p30l", "p30l_dual", "bonesaw_rusted", "potato_cannon", "scout",
-		"mkg45", "blr", "svd", "vss", "scarssr", "l86", "potato_cannonball"
+		"mkg45", "blr", "svd", "vss", "scarssr", "l86", "potato_cannonball", "m9_cursed", "knuckles_rusted", "knuckles_heroic"
 	];
 	
 	var snipers = ["m870", "sv98", "awc", "mosin", "spas12", "model94", "potato_cannon", "scout", "blr"]
@@ -622,29 +622,13 @@ window.gameFunctions.gameUpdate = function () {
 			y: mousePos.y - curPlayer.pos.y
 		};
 
-		var enemiesInSight = enimies.filter((enemy) => {
-			if (!window.menu.UserSetting.shoot.autoAimRestirctionEnabled)
-				return true;
-
-			var enemyDir =
-			{
-				x: enemy.pos.x - curPlayer.pos.x,
-				y: enemy.pos.y - curPlayer.pos.y
-			};
-
-			var enemyDistance = getDistance(enemy.pos, mousePos);
-
-			// var angleDif = Math.abs(Math.atan2(enemyDir.y, enemyDir.x) - Math.atan2(mouseVec.y, mouseVec.x));
-
-			// return 2 > 1 || enemyDistance <  6000;
-
-		});
-
-		// target = enemiesInSight.reduce((e1, e2) => (getDistance(mousePos, e1.pos) < getDistance(mousePos, e2.pos)) ? e1 : e2);
+		var enemiesInSight = enimies
 		var i;
 		posListX = []
 		posListY = []
 		distList = []
+		downedList = []
+		downedDist = []
 		for (i = 0; i < enemiesInSight.length; i++) {
 			posListX.push(enemiesInSight[i].pos.x)
 			posListY.push(enemiesInSight[i].pos.y)
@@ -654,13 +638,24 @@ window.gameFunctions.gameUpdate = function () {
 		enemyIndex = distList.indexOf(Math.min(...distList))
 		target = enemiesInSight[enemyIndex]
 		if (target[obfuscate.netData][obfuscate.downed] || target[obfuscate.netData][obfuscate.layer] != curPlayer[obfuscate.netData][obfuscate.layer]) {
-			if(enemiesInSight.length == 1) {
+			if (enemiesInSight.length == 1) {
 				target = enemiesInSight[distList.indexOf(Math.min(...distList))]
 			}
 			else if (enemiesInSight.length > 1) {
-				enemiesInSight.splice(enemyIndex, 1)
-				distList.splice(enemyIndex, 1)
-				target = enemiesInSight[distList.indexOf(Math.min(...distList))]
+				for (k = 0; k < enemiesInSight.length; k++) {
+					if(enemiesInSight[k][obfuscate.netData][obfuscate.downed]){
+						downedList.push(enemiesInSight[k])
+						downedDist.push(distList[k])
+						enemiesInSight.splice(k, 1)
+						distList.splice(k, 1)
+					}
+				}
+				if(enemiesInSight.length == 0 || window.gameVars.Input.Cheat.SpinPressed){
+					target = downedList[downedDist.indexOf(Math.min(...downedDist))]
+				}
+				else if (enemiesInSight.length > 0 && !window.gameVars.Input.Cheat.SpinPressed){
+					target = enemiesInSight[distList.indexOf(Math.min(...distList))]
+				}				
 			}
 			
 		}
@@ -704,14 +699,13 @@ window.gameFunctions.gameUpdate = function () {
 
 		if (window.gameVars.Input.Cheat.SpinPressed) {
 			window.gameVars.Input.Mouse.SpinActive = false
-			window.gameVars.Input.Mouse.AimActive = false;
 		}
 
 		if (target) {
 			var pos = target.pos;
 			var prediction = target.prediction ? target.prediction : { x: 0, y: 0 };
 			
-			if (window.gameVars.Input.Cheat.AutoAimPressed == false && !window.gameVars.Input.Cheat.SpinPressed) {
+			if (window.gameVars.Input.Cheat.AutoAimPressed == false) {
 				window.gameVars.Input.Mouse.AimActive = true;
 				window.gameVars.Input.Mouse.AimPos = game[obfuscate.camera].pointToScreen({ x: pos.x + prediction.x, y: pos.y + prediction.y });
 
@@ -720,7 +714,7 @@ window.gameFunctions.gameUpdate = function () {
 				game[obfuscate.input][obfuscate.mousePosition].y = window.gameVars.Input.Mouse.AimPos.y;
 
 			}
-			else if (window.gameVars.Input.Cheat.AutoAimPressed == true || window.gameVars.Input.Cheat.SpinPressed) {
+			else if (window.gameVars.Input.Cheat.AutoAimPressed == true) {
 				window.gameVars.Input.Mouse.AimActive = false;
 			}
 
