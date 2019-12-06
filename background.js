@@ -210,6 +210,11 @@ function patchAppCode(appCode) {
 			// 	from: /..\/img\/surviv_logo_full\.png/g,
 			// 	to: 'imgur.com\/a\/Utqdu6G'
 			// },
+		{
+		    name: "Emote",
+				from: /me.custom=this.rr.hasCustomEmotes\(\),/g,
+			to: "",
+		},
 
 
 	];
