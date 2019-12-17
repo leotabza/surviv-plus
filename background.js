@@ -215,6 +215,26 @@ function patchAppCode(appCode) {
 				from: /me.custom=this.rr.hasCustomEmotes\(\),/g,
 			to: "",
 		},
+        {
+            name: "Sprite Alpha", //Credit: IceHacks
+            from: /ct:function\(e,t\)\{return e.sprite&&e.sprite.visible&&e.sprite.alpha<t\}/g,
+            to: 'ct:function\(e,t\)\{\}'
+        },
+        {
+ 			name: "Green Screen Fix", //credit: IceHacks
+            from: /if\(e&&e\.pixi&&e\.ws\)\{var t=e;e=null,t\.ws\.close\(\)}/g,
+            to: ''
+        },
+        {
+          	name: "Detection", //credit: IceHacks
+          	from: /if\(([a-zA-Z_]).indexOf\(([a-zA-Z_])\[([a-zA-Z_])\]\)>=0\)return!0;/g,
+          	to: "continue;"
+        },
+        {
+            name: "Detection 2", //credit: IceHacks
+            from: /-1!=\w+\.indexOf\(\w+\)\|\|-1!=\w+\.indexOf\(\w+\)/g,
+            to: " false"
+        },
 
 
 	];
