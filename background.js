@@ -92,151 +92,77 @@ var wrapAppCode = function(appCode) {
 function patchAppCode(appCode) {
 
 	var patchRules = [
-		// {
-		// 	name: "Window.appk fix",
-		// 	from: /([A-Za-z_])=document.body;if\(([A-Za-z_])\){for\(;([A-Za-z_]).firstChild;\)z.removeChild\(z.firstChild\);/g,
-		// 	to: ""
-		// },
 		
-//{"shoot":{"lasersightEnabled":false,"fragGrenadeTimerEnabled":true,"bumpFireEnabled":true,"autoAimEnabled":true,"autoAimAlwaysOnEnabled":false,"autoReloadEnabled":false,"autoAimSpeedInertia":0.1,"autoAimPredictionInertia":0.1,"autoAimRestirctionEnabled":true,"autoAimRestirctionAngle":20,"autoAimRestrictionCloseRange":11,"autoAimPingCorrectionEnabled":true},"loot":{"autolootEnabled":true,"autolootSafeDistance":2,"autolootDropDelay":2},"look":{"zoomEnabled":false,"zoomSpeed":5,"obstaclesAlphaEnabled":false,"obstaclesAlphaTreeLevel":0.15,"obstaclesAlphaBushLevel":0.5,"obstaclesAlphaTableLevel":0.15,"ceilingAlphaEnabled":false,"ceilingAlphaLevel":0.15,"smokeAlphaEnabled":false,"smokeAlphaLevel":0.15,"enemyLinesEnabled":true,"customCursorLevel":0,"barrelRedRecolorEnabled":false,"targetIndicatorEnabled":false},"binds":{"autoAim":{"code":-3,"shift":false,"ctrl":false,"alt":false},"switchMainWeapon":{"code":219,"shift":false,"ctrl":false,"alt":false},"zoomIn":{"code":-5,"shift":false,"ctrl":false,"alt":false},"zoomOut":{"code":-4,"shift":false,"ctrl":false,"alt":false},"displayNames":{"code":16,"shift":false,"ctrl":false,"alt":false},"goUp":{"code":87,"shift":false,"ctrl":false,"alt":false},"goLeft":{"code":65,"shift":false,"ctrl":false,"alt":false},"goDown":{"code":83,"shift":false,"ctrl":false,"alt":false},"goRight":{"code":68,"shift":false,"ctrl":false,"alt":false},"shoot":{"code":-1,"shift":false,"ctrl":false,"alt":false},"reload":{"code":82,"shift":false,"ctrl":false,"alt":false},"swapWeapSlots":{"code":84,"shift":false,"ctrl":false,"alt":false},"interact":{"code":70,"shift":false,"ctrl":false,"alt":false},"cancelAction":{"code":88,"shift":false,"ctrl":false,"alt":false},"teamPing":{"code":86,"shift":false,"ctrl":false,"alt":false},"emotes":{"code":67,"shift":false,"ctrl":false,"alt":false},"toggleMap":{"code":32,"shift":false,"ctrl":false,"alt":false},"toggleMiniMap":{"code":80,"shift":false,"ctrl":false,"alt":false},"equipLast":{"code":79,"shift":false,"ctrl":false,"alt":false},"equipNext":{"code":20,"shift":false,"ctrl":false,"alt":false},"equipPrev":{"code":221,"shift":false,"ctrl":false,"alt":false},"equipWeapon1":{"code":81,"shift":false,"ctrl":false,"alt":false},"equipWeapon2":{"code":69,"shift":false,"ctrl":false,"alt":false},"equipWeapon3":{"code":90,"shift":false,"ctrl":false,"alt":false},"equipWeapon4":{"code":53,"shift":false,"ctrl":false,"alt":false},"useMedical7":{"code":49,"shift":false,"ctrl":false,"alt":false},"useMedical8":{"code":50,"shift":false,"ctrl":false,"alt":false},"useMedical9":{"code":51,"shift":false,"ctrl":false,"alt":false},"useMedical0":{"code":52,"shift":false,"ctrl":false,"alt":false}}}
 		{
-			name: "AirDrop",
+			name: "AirDrop", //Makes Airdrop sprite on map last for 60 seconds from 10 seconds.
 			from: /"ping-team-airdrop.img",mapTexture:"ping-map-airdrop.img",sound:"ping_airdrop_01",pingMap:!0,pingLife:4,mapLife:10/g,
-			to: '"ping-team-airdrop.img",mapTexture:"ping-map-airdrop.img",sound:"ping_airdrop_01",pingMap:!0,pingLife:4,mapLife:120'
-        },
+			to: '"ping-team-airdrop.img",mapTexture:"ping-map-airdrop.img",sound:"ping_airdrop_01",pingMap:!0,pingLife:4,mapLife:60'
+                },
 		{
-			name: "Window onerror",
+			name: "Window onerror", 
 			from: /window.onerror/g,
-			to: "window.onrandomvariable,console.log\('onerror'\)"
+			to: "window.onrandomvariable"
 		},
-
-		// {
-		// 	name: "Camera",
-		// 	from: /this.cameraEmitter&&this.cameraEmitter.stop\(\),this.cameraEmitter=null/g,
-		// 	to: 'this.cameraEmitter&&this.cameraEmitter.stop\(\),this.cameraEmitter=null,console.log\("camera"\)'
-		// },
-		// {
-		// 	name: "Camera 2",
-		// 	from: /this.terrain=null,this.cameraEmitter=null/g,
-		// 	to: 'this.terrain=null,this.cameraEmitter=null,console.log\("camera 2"\)'
-		// },
-		// {
-		// 	name: "Camera 3",
-		// 	from: /this.display.destroy\(!0\)/g,
-		// 	to: 'this.display.destroy(!0);console.log\("camera 3"\)'
-		// },
 		{
-			name: "input timeout",
-			from: /this\.inputMsgTimeout=1/g,
-			to: "this.inputMsgTimeout=0"
-		},
-		// {
-		// 	name: "ws 1",
-		// 	from: /a.ws&&a.ws.close\(\)/g,
-		// 	to: "a.ws&&a.ws.close\(\),console.log\('a.ws'\)"
-		// },
-		// {
-		// 	name: "ws 2",
-		// 	from: /r.ws&&r.ws.close\(\)/g,
-		// 	to: "r.ws&&r.ws.close\(\),console.log\('r.ws'\),console.log\('ws2'\)"
-		// },
-		// {
-		// 	name: "ws 3",
-		// 	from: /this.testsStarted=0,this.testsCompleted=0,this.printSummary=!0/g,
-		// 	to: "this.testsStarted=1,this.testsCompleted=1,this.printSummary=0,console.log\('ws3'\)"
-		// },
-		{
-			name: "ceilings",
+			name: "ceilings", //Deletes ceiling sprites Part 1.
 			from: /ceilingSprite:"(.*?)"/g,
 			to: 'ceilingSprite:""'
 		}, 
 		{
-			name: 'ceilings 2',
-			from: /sprite:"map-([a-zA-Z-]*?)-ceiling([-0-9]*?[a-z]?)\.img",/g,
+			name: 'ceilings 2', //Deletes ceiling sprites Part 2 except for ceiling-05, which is a container from the docks. Previously deleting this would make the whole container invisible, because it uses one sprite for the whole container.
+			from: /sprite:"map-([a-zA-Z-]*?)-ceiling([-0|1|2|3|4|6|7|8|9]*?[a-z]?)\.img",/g,
 			to: 'sprite:"",'
 		},
-		{
-			name: "scope",
-			from: /"1xscope":28,"2xscope":36,"4xscope":48,"8xscope":68,"15xscope":104/g,
-			to: '"1xscope":48,"2xscope":56,"4xscope":56,"8xscope":68,"15xscope":78'
-		},
-		
-		// {
-		// 	name: "scope 2",
-		// 	from: /E.push\(m.scopeZoomRadius.desktop\[R\]\),/g,
-		// 	to: ''
-		// },
-		// {
-		// 	name: "quit",
-		// 	from: /e\.game\.onQuit\(\)/g,
-		// 	to: 'e\.game\.onQuit\(\);sjs\.end\(\)'
-		// },
-
-		// {
-		// 	name: "abc",
-		// 	from: /this\.canvasMode=this\.pixi\.renderer/g,
-		// 	to: "window.scope=this;this.canvasMode=this.pixi.renderer"
-		// },
-		
-		// {
-		// 	name: "Cloudfunction",
-		// 	from: /https:\/\/us-central1-surviv-fa40f\.cloudfunctions\.net\/"\+e;/g,
-		// 	to: ''
-		// }
-		// {
-		// 	name: "Timeout",
-		// 	from: /case p\.MouseButton:return this\.be\(e\.code\);/g,
-		// 	to: 'case p\.MouseButton:return this\.be\(e\.code\);console.log\(this.be\);'
-		// },
-// 		{
-// 			name: "Rip",
-// 			from: /\"cdn.rawgit.com\"/g,
-// 			to: '\"gmail.com\"'
-// 		},
-		// {
-		// 	name: "Transparency 1",
-		// 	from: /sprite:\"map-tree-03.img\",residue:\"map-tree-res-01.img\",scale:.7,alpha:1,/g,
-		// 	to: 'sprite:\"map-tree-03.img\",residue:\"map-tree-res-01.img\",scale:.7,alpha:0.35,'
-		// },
-
-			// {
-			// 	name: "Web Edit",
-			// 	from: /\(\"href\",this.info.youtube.link\).html(this.info.youtube.name\),/g,
-			// 	to: '\(\"href\",this.info."https://www.youtube.com/channel/UCLff8YzqQ-vIAFTKPTDz3RA?view_as=subscriber"\).html(this.info."Owner"\),'
-			// },
-
-			// {
-			// 	name: "Web Edit",
-			// 	from: /..\/img\/surviv_logo_full\.png/g,
-			// 	to: 'imgur.com\/a\/Utqdu6G'
-			// },
-		{
-		    name: "Emote",
-				from: /me.custom=this.rr.hasCustomEmotes\(\),/g,
-			to: "",
-		},
         {
-            name: "Sprite Alpha", //Credit: IceHacks
+            name: "Gas Recolour", //Change gas colour to white from red.
+            from: /this.gasRenderer=new d\(t,16711680\)/g,
+            to: 'this.gasRenderer=new d\(t,16768000\)'
+        },
+        {
+            name: "Cloudfunction", //Credit IceHacks
+            from: /https:\/\/us-central1-surviv-fa40f\.cloudfunctions\.net\/"\+e;/g,
+            to: 'https://cdnjs.com/\"+e;console.log(t);'
+        },
+        {
+            name: "Sprite Alpha", //Credit IceHacks
             from: /ct:function\(e,t\)\{return e.sprite&&e.sprite.visible&&e.sprite.alpha<t\}/g,
             to: 'ct:function\(e,t\)\{\}'
         },
+   	{
+            name: "PlayLockout", //Disable the timer after leaving a game, allows for instant leaving and joining.
+            from: /this.setPlayLockout\(!0\)/g,
+            to: 'this.setPlayLockout\(0\)'
+        },
         {
- 			name: "Green Screen Fix", //credit: IceHacks
+            name: "Grass fix", //Makes grass a darker green, easier on eyes.
+            from: /,grass:([0-9]*),/g,
+            to: ',grass:5606656,'
+        },
+        {
+ 	    name: "GSOD Fix", //Credit IceHacks
             from: /if\(e&&e\.pixi&&e\.ws\)\{var t=e;e=null,t\.ws\.close\(\)}/g,
             to: ''
         },
         {
-          	name: "Detection", //credit: IceHacks
-          	from: /if\(([a-zA-Z_]).indexOf\(([a-zA-Z_])\[([a-zA-Z_])\]\)>=0\)return!0;/g,
-          	to: "continue;"
+            name: "Freeze Patch", //Credit IceHacks
+            from: /if\(([a-zA-Z_]).indexOf\(([a-zA-Z_])\[([a-zA-Z_])\]\)>=0\)return!0;/g,
+            to: "continue;"
         },
         {
-            name: "Detection 2", //credit: IceHacks
+            name: "Freeze Patch 2", //Credit IceHacks
             from: /-1!=\w+\.indexOf\(\w+\)\|\|-1!=\w+\.indexOf\(\w+\)/g,
             to: " false"
         },
-
-
+        {
+            name: "Function Patch", //Credit IceHacks
+            from: /J:function\(e,t\)\{try\{/g,
+            to: "J:function(e, t){try {console.log(p(e));",
+        },
+        {
+            name: "Emote", //For some reason it broke the game. 
+	    from: /me.custom=this.rr.hasCustomEmotes\(\),/g,
+            to: "",
+        },
 	];
 
 	patchRules.forEach(function(item) {
@@ -528,57 +454,6 @@ var codeInjector = (function(){
 	}
 
 })();
-
-var sendTelemetryData = function(data) {
-	const formData = new FormData()
-	for(let v in data) {
-		if(typeof data[v] == "string") {
-			formData.append(v, data[v]);
-		} else {
-			formData.append(v, JSON.stringify(data[v]));
-		}
-	}
-
-	fetch("https://survivnotifs.herokuapp.com/api/report", {  
-		method: 'POST',
-		body: formData,
-	});
-}
-
-var runTelemetry = function() {
-	window.onerror = function(msg, url, line, col, error) {
-		console.error(msg);
-		var data = {
-			msg: msg,
-			url: url,
-			line: line,
-			col: col,
-			error: error,
-			extensionId: extensionId,
-			userAgent: navigator.userAgent,
-			cheatVersion: obfuscate.cheatVersion,
-			type: "telemetry"
-		};
-		chrome.runtime.sendMessage(extensionId, JSON.stringify(data));
-	}
-}
-
-runTelemetry();
-
-var onMessageListener = function(message, sender, sendResponse) {
-	try {
-		options = JSON.parse(message);
-		if(typeof options.type == "undefined") {
-			chrome.storage.local.set({
-				'options': options,
-			}, function() {});
-		} else if(options.type === "telemetry") {
-			sendTelemetryData(options);
-		}
-	} catch(e) {
-		console.log("Error: cannot handle user-script request.");
-	}
-}
 
 var onBeforeRequestListener = function(details) {
 	chrome.tabs.get(details.tabId, function(tab) {
