@@ -12,15 +12,6 @@
 				<a id="btn-cheat-spinBotEnabled" class="btn-game-menu">Spin Bot</a>
 				<span class="tooltip-text">Spins your character really fast.</span>
 			</div>
-
-			<div class="button-container">
-				<a id="btn-cheat-lasersightEnabled" class="btn-game-menu">Lasersight</a>
-				<span class="tooltip-text">Shows spreading angle and range of equipped weapon.</span>
-			</div>
-			<div class="button-container">
-				<a id="btn-cheat-fragGrenadeTimerEnabled" class="btn-game-menu">Frag grenade timer</a>
-				<span class="tooltip-text">Display countdown while cooking frag grenade.</span>
-			</div>
 			<div class="button-container">
 				<a id="btn-cheat-bumpFireEnabled" class="btn-game-menu">Bump fire</a>
 				<span class="tooltip-text">Autoclicker for semi-automatic weapons.</span>
@@ -29,56 +20,14 @@
 				<a id="btn-cheat-autoAimEnabled" class="btn-game-menu">Auto aim</a>
 				<span class="tooltip-text">Automatically aim to enemy who closest to your mouse.</span>
 			</div>
-			<div class="button-container">
-				<a id="btn-cheat-autoAimAlwaysOnEnabled" class="btn-game-menu">Auto aim Always-on Mode</a>
-				<span class="tooltip-text">Keeps auto aim always on so there's no need for a bind.</span>
-			</div>
-			<div class="button-container">
-				<a id="btn-cheat-autoReloadEnabled" class="btn-game-menu">Auto Reload Guns</a>
-				<span class="tooltip-text">Automatically reloads guns if they're not already fully loaded.</span>
-			</div>
 			<div class="slider-container ui-slider-container">
 				<p id="menu-text-autoAimSpeedInertia" class="slider-text">Speed inertia: </p>
-				<input id="slider-autoAimSpeedInertia" type="range" min="0.00" max="0.99" step="0.01" value="0.01"
+				<input id="slider-autoAimSpeedInertia" type="range" min="0.00" max="1.0" step="0.05" value="0.05"
 					class="slider">
 				<span class="tooltip-text">Enemy speed detection inertia. You can lower it if you have stable
 					connection. Alter it if you dont like how autoaim works.</span>
 			</div>
-			<div class="slider-container ui-slider-container">
-				<p id="menu-text-autoAimPredictionInertia" class="slider-text">Prediction inertia: </p>
-				<input id="slider-autoAimPredictionInertia" type="range" min="0.00" max="0.99" step="0.01" value="0.01"
-					class="slider">
-				<span class="tooltip-text">Enemy speed detection inertia. You can lower it if you have stable
-					connection. Alter it if you dont like how autoaim works.</span>
-			</div>
-			<div class="button-container">
-				<a id="btn-cheat-autoAimRestirctionEnabled" class="btn-game-menu">Auto aim restriction</a>
-				<span class="tooltip-text">Restrict auto-aim to specified angle or range. With this option you need to
-					aim roughly.</span>
-			</div>
-			<div class="slider-container ui-slider-container">
-				<p id="menu-text-autoAimRestirctionAngle" class="slider-text">Restriction ± angle, °: </p>
-				<input id="slider-autoAimRestirctionAngle" type="range" min="3" max="40" step="1" value="3"
-					class="slider">
-				<span class="tooltip-text">Targets will be detected inside this angle.</span>
-			</div>
-			<div class="slider-container ui-slider-container">
-				<p id="menu-text-autoAimRestrictionCloseRange" class="slider-text">Minimum close range: </p>
-				<input id="slider-autoAimRestrictionCloseRange" type="range" min="0" max="30" step="1" value="2"
-					class="slider">
-				<span class="tooltip-text">Targets inside this range will be detected even if they out of restriction
-					angle.</span>
-			</div>
-			<div class="button-container">
-				<a id="btn-cheat-autoAimPingCorrectionEnabled" class="btn-game-menu">Take net lag into account</a>
-				<span class="tooltip-text">If you have low ping you can disable it. Useful for people with 100
-					ping.</span>
-			</div>
-			<!-- <a id="btn-cheat-autoAimAntiAntiCheatEnabled" class="btn-game-menu" >Aim smooth</a> -->
-			<!-- <div class="slider-container ui-slider-container"> -->
-			<!-- <p id="menu-text-autoAimAntiAntiCheatInertia" class="slider-text" >Aim smooth inertia: </p> -->
-			<!-- <input id="slider-autoAimAntiAntiCheatInertia" type="range" min="0.1" max="0.9" step="0.1" value="0.1" class="slider"> -->
-			<!-- </div> -->
+
 		</div>
 		<div id="tab-loot" class="cheat-menu-tab">
 			<!-- <a id="btn-cheat-lootHighlightEnabled" class="btn-game-menu" >Highlight loot</a> -->
@@ -178,35 +127,14 @@
 			<a id="btn-bind-zoomOut" class="btn-game-menu">Zoom out: </a>
 			<!-- 			<a id="btn-bind-displayNames" class="btn-game-menu" >Display names: </a> -->
 			<a id="btn-bind-spinPressed" class="btn-game-menu">Disable Spin: </a>
+			<a id="btn-bind-emotes" class="btn-game-menu">Use emotes: </a>
+			<a id="btn-bind-teamPing" class="btn-game-menu">Use team ping: </a>
 
 			<!-- <a id="btn-bind-streamerMode" class="btn-game-menu" >Streamer mode: </a> -->
-			<p class="menu-text">Game binds</p>
-			<a id="btn-bind-goUp" class="btn-game-menu">Move up: </a>
-			<a id="btn-bind-goLeft" class="btn-game-menu">Move left: </a>
-			<a id="btn-bind-goDown" class="btn-game-menu">Move down: </a>
-			<a id="btn-bind-goRight" class="btn-game-menu">Move right: </a>
-			<a id="btn-bind-shoot" class="btn-game-menu">Shoot: </a>
-			<a id="btn-bind-reload" class="btn-game-menu">Reload: </a>
-			<a id="btn-bind-swapWeapSlots" class="btn-game-menu">Switch Gun Slots: </a>
-			<a id="btn-bind-interact" class="btn-game-menu">Interact: </a>
-			<a id="btn-bind-cancelAction" class="btn-game-menu">Cancel action: </a>
-			<a id="btn-bind-teamPing" class="btn-game-menu">Use team ping: </a>
-			<a id="btn-bind-emotes" class="btn-game-menu">Use emotes: </a>
-			<a id="btn-bind-toggleMap" class="btn-game-menu">Toggle map: </a>
-			<a id="btn-bind-toggleMiniMap" class="btn-game-menu">Toggle minimap: </a>
-			<a id="btn-bind-equipLast" class="btn-game-menu">Equip last: </a>
-			<a id="btn-bind-equipNext" class="btn-game-menu">Equip next: </a>
-			<a id="btn-bind-equipPrev" class="btn-game-menu">Equip prev: </a>
-			<a id="btn-bind-equipWeapon1" class="btn-game-menu">Equip weapon 1: </a>
-			<a id="btn-bind-equipWeapon2" class="btn-game-menu">Equip weapon 2: </a>
-			<a id="btn-bind-equipWeapon3" class="btn-game-menu">Equip fists: </a>
-			<a id="btn-bind-equipWeapon4" class="btn-game-menu">Equip grenade: </a>
-			<a id="btn-bind-useMedical7" class="btn-game-menu">Use bandage: </a>
-			<a id="btn-bind-useMedical8" class="btn-game-menu">Use medkit: </a>
-			<a id="btn-bind-useMedical9" class="btn-game-menu">Use soda: </a>
-			<a id="btn-bind-useMedical0" class="btn-game-menu">Use pills: </a>
+
 		</div>
 	</div>
 
 
 </div>
+
