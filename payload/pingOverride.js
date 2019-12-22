@@ -4,7 +4,6 @@ window.gameFunctions.pingOverride = function () {
     this.override.tempWorking = false;
     this.override.pingTriggered = false;
     this.override.emoteTriggered = false;
-
     this.__defineSetter__("emoteWheelsGreyed", function (val) { });
     this.__defineGetter__("emoteWheelsGreyed", function () {
         return false;
@@ -44,12 +43,6 @@ window.gameFunctions.pingOverride = function () {
             this.override.emoteTriggered = false;
         }
     }
-
-    this.__defineSetter__("emoteMouseTriggered", function (val) { });
-
-    this.__defineGetter__("emoteMouseTriggered", function () {
-        return this.override.emoteTriggered
-    });
 
     var currentContext = this;
 
