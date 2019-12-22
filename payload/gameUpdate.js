@@ -1,844 +1,691 @@
-window.gameFunctions = window.gameFunctions || {};
-window.gameFunctions.gameSendMessage = function (messageCode, messageData) {
-	if (!window.gameVars)
-		return;
-	if (messageCode == 13)
-		window.gameVars.Game.LastTimeDropItem = window.performance.now();
+var number = 0
+var processes = []
+var disableSpin = false
+
+window.gameFunctions.gameSrocessGameUpdate = function () {
 }
-number = 0
-processes = []
-
-var angle = 0;
-var speed = 10;
-
-disableSpin = false
-
-positions = []
-
-window.gameFunctions.gameSrocessGameUpdate = function (mesg) {
-
-	var red = { r: 255, g: 0, b: 0 };
-	var green = { r: 0, g: 180, b: 0 };
-
-	function nthroot(x, n) {
-		try {
-			var negate = n % 2 == 1 && x < 0;
-			if (negate)
-				x = -x;
-			var possible = Math.pow(x, 1 / n);
-			n = Math.pow(possible, n);
-			if (Math.abs(x - n) < 1 && (x > 0 == n > 0))
-				return negate ? -possible : possible;
-		} catch (e) { }
-	}
-
-	function getColor(color1, color2, weight) {
-		var w1 = weight;
-		var w2 = 1 - w1;
-		var rgb = {
-			r: Math.round(color1.r * w1 + color2.r * w2),
-			g: Math.round(color1.g * w1 + color2.g * w2),
-			b: Math.round(color1.b * w1 + color2.b * w2)
-		};
-		return rgb;
-	}
-
-	function getWeight(value, min, max) {
-		if (value <= min) return 0;
-		if (value >= max) return 1;
-		return (value - min) / (max - min);
-	}
-
-	function colorToString(color) {
-		return 'rgba(' + color.r + ', ' + color.g + ', ' + color.b + ', 1.0)';
-	}
-
-	function getMean(array) {
-		return array.length > 0 ? array.reduce((acc, val) => acc + val) / array.length : 1000;
-	}
-
-	var perf = window.gameVars.Perfomance;
-	var LATinertia = 0.2;
-	var LATResultsCount = 5;
-
-	var ping = (new Date).getTime() - this.seqSendTime;
-
-	if (mesg.ack == this.seq && this.seqInFlight) {
-		this.seqInFlight = false;
-		this.pings.push(ping);
-
-		while (this.pings.length > LATResultsCount) {
-			this.pings.shift();
-		}
-	}
-
-	// update LAT counter
-
-	var LAT = getMean(this.pings);
-
-	if (perf.lastLAT) {
-		LAT = LAT * (1 - LATinertia) + perf.lastLAT * LATinertia;
-	}
-
-	perf.lastLAT = LAT;
-
-	var LATCol = getColor(red, green, getWeight(LAT, 10, 200));
-
-	if (window.gameVars && window.gameVars.UI && window.gameVars.UI.LATText) {
-		window.gameVars.UI.LATText.text("LAT: " + Math.round(LAT));
-		window.gameVars.UI.LATText.css('color', colorToString(LATCol));
-	}
-
-	// update LAG counter
-
-	var minLag = Math.min.apply(null, this.pings);
-	var maxLag = Math.max.apply(null, this.pings);
-
-	var currLag = maxLag - minLag;
-
-	var LAGinertia = 0.2;
-
-	var minCountingLag = 20;
-	var maxCountingLag = 100 - minCountingLag;
-
-	var minCountingLatLag = 150;
-	var maxCountingLatLag = 250 - minCountingLatLag;
-
-	var newDevLAG = (currLag - minCountingLag) / maxCountingLag;
-	var newLatLAG = this.seqInFlight ? (ping - minCountingLatLag) / maxCountingLatLag : 0.0;
-
-	var newLAG = Math.max(newDevLAG, newLatLAG);
-
-	newLAG = newLAG < 0.01 ? 0.01 : newLAG > 0.99 ? 0.99 : newLAG;
-
-	newLAG = (newLAG - 0.5) * 2;
-	newLAG = nthroot(newLAG, 3);
-	newLAG = newLAG / 2 + 0.5;
-
-	newLAG = newLAG < 0.1 ? 0 : newLAG > 0.9 ? 1.0 : newLAG;
-
-	if (perf.lastLAG) {
-		newLAG = newLAG * (1 - LAGinertia) + perf.lastLAG * LAGinertia;
-	}
-
-	perf.lastLAG = newLAG;
-
-	if (window.gameVars && window.gameVars.UI && window.gameVars.UI.LAGText)
-		window.gameVars.UI.LAGText.fadeTo(0, newLAG);
-}
-
 window.gameFunctions.gameUpdate = function () {
+    var game = this;
 
-	if (!window.menu || !window.menu.UserSetting)
-		return;
+    if(!game){
+        console.log(this)
+    }
 
-	// Local functions
+    if (!window.gameVars)
+        return;
+    var state = window.gameVars.Game;
+    var gameData = state.GameData;
 
-	var getDistance = function (p1, p2) {
-		var dx = p2.x - p1.x, dy = p2.y - p1.y;
-		return Math.sqrt(dx * dx + dy * dy);
-	};
-
-	var getDistance2 = function (x1, y1, x2, y2) {
-		return Math.sqrt(Math.pow((x1 - x2), 2) + Math.pow((y1 - y2), 2))
-	}
-
-	var getSecondsElapsed = function (time) {
-		return (window.performance.now() - time) / 1000;
-	};
-
-	var getTimeElapsed = function (time) {
-		return (window.performance.now() - time);
-	};
-
-	var pressButton = function (keyCode) {
-		var keys = game.he.input.keys;
-
-		if (!keys[keyCode]) {
-			setTimeout(function () {
-				keys[keyCode] = true;
-				setTimeout(function () {
-					delete keys[keyCode];
-				}, 50);
-			}, 50);
-		}
-	};
-
-	var interactionTypes = {
-		Obstacle: 2,
-		Loot: 3
-	};
-
-	var detectEnimies = function () {
-		if (!game[obfuscate.playerBarn][obfuscate.playerInfo][game[obfuscate.activeId]]) return [];
-		var selfId = game[obfuscate.activeId];
-		var selfTeamId = game[obfuscate.playerBarn][obfuscate.playerInfo][game[obfuscate.activeId]].teamId;
-		var objectIds = Object.keys(game[obfuscate.objectCreator].idToObj);
-		var playerIds = Object.keys(game[obfuscate.playerBarn][obfuscate.playerInfo]);
-		var allPlayers = game[obfuscate.playerBarn][obfuscate.playerInfo];
-		var firstPlayerId = Object.keys(allPlayers)[0];
-		var firstPlayerObj = game[obfuscate.objectCreator].idToObj[firstPlayerId];
-		var allPlayerDict = {};
-		for (let p in allPlayers) {
-			let team = allPlayers[p].teamId;
-			if (!allPlayerDict[team]) {
-				allPlayerDict[team] = [];
-			}
-			let teamPlayer = allPlayers[p].name;
-			allPlayerDict[team].push(teamPlayer);
-		}
-		// $("#ui-game-tab-keybinds").html(allPlayerDict);
-		if (window.gameVars.Game.updateTeamTab) {
-			window.gameVars.Game.updateTeamTab = false;
-
-
-			$("#ui-game-tab-keybinds").html("");
-			$("#ui-game-tab-keybinds").css("overflow-y", "scroll");
-			var killfeedText = $("#ui-killfeed-0 > div").html();
-			if (killfeedText.indexOf("killed") !== -1) {
-				let deadPlayerText = killfeedText.split("killed ")[1];
-				if (deadPlayerText) {
-					window.deadPlayers.add(deadPlayerText.split("with")[0].trim());
-				}
-			}
-
-			var allPlayersStr = "";
-			for (let team in allPlayerDict) {
-				if (allPlayerDict[team].length > 1) {
-					for (let p = 0; p < allPlayerDict[team].length; p++) {
-						let thisPlayer = allPlayerDict[team][p];
-						if (window.deadPlayers.has(thisPlayer)) {
-							allPlayerDict[team][p] = `<span style="color: red;">${allPlayerDict[team][p]}</span>`;
-						}
-					}
-					allPlayersStr = allPlayerDict[team].join(', ');
-				} else {
-					if (window.deadPlayers.has(allPlayerDict[team][0])) {
-						allPlayerDict[team][0] = `<span style="color: red;">${allPlayerDict[team][0]}</span>`;
-					}
-					allPlayersStr = allPlayerDict[team][0];
-				}
-				$("#ui-game-tab-keybinds").append(`<p><strong>TEAM ${team}:</strong> ${allPlayersStr}</p>`);
-			}
-		}
-
-		var isTeammate = function (plrId, plrObj) {
-			var isTmmt = game[obfuscate.playerBarn][obfuscate.playerInfo][plrId].teamId == selfTeamId;
-			plrObj.teammate = isTmmt;
-			return isTmmt;
-		}
-
-		
-		return playerIds
-			.filter(function (id) {
-				var playerObject = game[obfuscate.objectCreator].idToObj[id];
-				return playerObject &&
-					(!isTeammate(id, playerObject)) &&
-					(!playerObject[obfuscate.netData][obfuscate.dead]) &&
-					// (!playerObject[obfuscate.netData][obfuscate.downed]) &&
-					// (playerObject[obfuscate.layer] == game[obfuscate.activePlayer][obfuscate.layer]) &&
-					id != selfId;
-			})
-			.map(function (id) {
-				return game[obfuscate.objectCreator].idToObj[id];
-			});
-	}
-
-	var playerPosListCount = 5;
-	var playerLastRelevantTime = 0.19;
-
-
-
-	var processEnemy = function (enemy) {
-		if (!enemy)
-			return;
-
-		enemy.prediction = { x: 0.0, y: 0.0 };
-		enemy.speed = { x: 0.0, y: 0.0 };
-		enemy.distance = { x: 0.0, y: 0.0 };
-		timeDiff = 0.001
-		distDiffX = 0
-		distDiffY = 0
-
-		processes.unshift(
-			{
-				pos: enemy.pos,
-				time: window.performance.now() / 1000
-			})
-
-		if (processes.length > 1 && processes[0].pos != processes[1].pos) {
-			{
-				timeDiff = processes[0].time - processes[1].time
-				distDiffX = processes[0].pos.x - processes[1].pos.x
-				distDiffY = processes[0].pos.y - processes[1].pos.y
-				processes.pop();
-			}
-		}
-		var distance =
-		{
-			x: distDiffX,
-			y: distDiffY
-		}
-		// enemy.direction = {
-		// 	x: (enemy.posData[1].pos.x - enemy.posData[0].pos.x) / distance,
-		// 	y: (enemy.posData[1].pos.y - enemy.posData[0].pos.y) / distance		
-		// }
-		var timeElapsed = timeDiff
-		var speed =
-		{
-			x: distance.x / timeElapsed,
-			y: distance.y / timeElapsed
-		}
-
-		var predSpeed = window.menu.UserSetting.shoot.autoAimSpeedInertia
-		enemy.speed = speed
-
-
-		enemy.distance = distance;
-
-		if (curBulletSpeed == 0) {
-			enemy.prediction = {
-				x: 0,
-				y: 0
-			};
-			return;
-		}
-
-		else {
-			var bulletReachTime = getDistance(curPlayer.pos, enemy.pos) / Number(curBulletSpeed)
-			if (window.menu.UserSetting.shoot.autoAimPingCorrectionEnabled) {
-				bulletReachTime += window.gameVars.Perfomance.lastLAT / 2000;
-			}
-
-			var prediction = {
-				x: 0,
-				y: 0
-			};
-
-			var prediction = {
-				x: enemy.speed.x * bulletReachTime,
-				y: enemy.speed.y * bulletReachTime
-			}
-			var predInert = window.menu.UserSetting.shoot.autoAimPredictionInertia;
-
-			enemy.prediction = prediction
-		}
-
-
-
-	}
-	// var runTimer = function (timerText, timerTime) {
-	// 	if(!game[obfuscate.pieTimer] || (game[obfuscate.pieTimer].timerTimeout && getSecondsElapsed(game[obfuscate.pieTimer].timerTimeout) < 0.1))
-	// 		return;
-	// 	game[obfuscate.pieTimer][obfuscate.free]();
-	// 	game[obfuscate.pieTimer][obfuscate.init](() => {stopTimer()}, timerTime, timerText, false);
-	// };
-
-	// var stopTimer = function() {
-	// 	if(!game[obfuscate.pieTimer])
-	// 		return;
-
-	// 	game[obfuscate.pieTimer][obfuscate.free]();
-
-	// 	game[obfuscate.pieTimer].timerBackground._tint = 16777215;
-	// 	game[obfuscate.pieTimer].outerCircle._tint = 16777215;
-	// 	game[obfuscate.pieTimer].counterText._tint = 16777215;
-	// 	game[obfuscate.pieTimer].labelText._tint = 16777215;
-
-	// 	game[obfuscate.pieTimer].timerTimeout = performance.now();
-	// };
-
-	// var getLootRange = function(loot) {
-	// 	return getDistance(loot.pos, curPlayer.pos) - items[loot.name].rad - gameData.player.radius;
-	// }
-
-	// var needToLoot = function() {
-
-	// 	var loot = game[obfuscate.lootBarn][obfuscate.closestLoot];
-	// 	var gunsSafeDistance = window.menu.UserSetting.loot.autolootSafeDistance;
-
-	// 	if(!loot) {			
-	// 		return false;
-	// 	}
-
-
-	// 	var needGuns = !invWeapon1 || !invWeapon2;
-
-	// 	var gunsNearBy = game[obfuscate.lootBarn][obfuscate.lootPool][obfuscate.pool].filter((l) => l.active && getLootRange(l) < gunsSafeDistance && gunNames.includes(l.name));
-
-	// 	var isSafeToPickup = !gunNames.includes(curPlayer.weapType);
-
-	// 	var lootIsDual = 
-	// 		(invWeapon1 && invWeapon1.dualWieldType && invWeapon1.id == loot.name) || 
-	// 		(invWeapon2 && invWeapon2.dualWieldType && invWeapon2.id == loot.name);
-
-
-	// 	var dualOnlyInRange = gunsNearBy.every((g) =>
-	// 		(invWeapon1 && invWeapon1.dualWieldType && invWeapon1.id == g.name) || 
-	// 		(invWeapon2 && invWeapon2.dualWieldType && invWeapon2.id == g.name));
-
-	// 	if(!isSafeToPickup && !needGuns && gunsNearBy.length > 0 && !dualOnlyInRange)
-	// 		return;
-
-	// 	if(loot.name.includes('pan')) return true;
-	// 	else if(loot.name.includes('katana')) return true;
-	// 	else if(loot.name.includes('stonehammer')) return true;
-	// 	else if(loot.name.includes('woodaxe')) return true;
-
-	// 	if(gunNames.includes(loot.name)) {
-	// 		if(needGuns || lootIsDual)
-	// 			return true;
-	// 	}		
-
-	// 	else if(loot.name.includes('backpack') && loot.name > game[obfuscate.activePlayer][obfuscate.netData].backpack) return true;
-	// 	else if(loot.name.includes('chest') && loot.name > game[obfuscate.activePlayer][obfuscate.netData].chest) return true;
-	// 	else if(loot.name.includes('helmet') && loot.name > game[obfuscate.activePlayer][obfuscate.netData].helmet) return true;
-	// 	else if(game[obfuscate.activePlayer][obfuscate.localData].inventory.hasOwnProperty(loot.name)){
-	// 		var backpackLvls = parseInt(game[obfuscate.activePlayer][obfuscate.netData].backpack.match(/\d/g).join(""));
-
-	// 		var max = gameData.bagSizes[loot.name][backpackLvls];
-	// 		var cur = game[obfuscate.activePlayer][obfuscate.localData].inventory[loot.name];
-
-	// 		if(cur < max)
-	// 			return true;
-	// 	}
-
-	// 	return false;
-	// };
-
-	// Local variables
-
-	var game = this;
-	if (!window.gameVars)
-		return;
-
-	var state = window.gameVars.Game;
-	var gameData = state.GameData;
-
-	if (!gameData)
-		return;
-
-	var items = gameData.items;
-	var mapScale = 16;
-
-	var autoFireGuns = ["frag", "fists", "flare_gun", "mk12", "mp220", "m870", "sv98", "awc", "m39", "mosin", "smoke", "saiga", "m9", "m9_dual", "ot38", "ot38_dual", "deagle", "deagle_dual", "spas12", "garand", "karambit_rugged", "karambit_prismatic",
-		"bayonet_rugged", "bayonet_woodland", "huntsman_rugged", "huntsman_burnished", "woodaxe", "hook", "pan", "karambit_drowned", "woodaxe_bloody", "m4a1", "bowie_vintage", "bowie_frontier", "usas", "mirv", "bar", "fireaxe", "m1911", "m1911_dual", "m1a1", "m1100",
-		"katana", "scorpion", "stonehammer", "model94", "snowball", "ots38_dual", "ots38", "katana_rusted", "kukri_trad", "an94", "machete_taiga", "m1014", "katana_orchid", "strobe", "naginata", "potato", "flare_gun_dual", "sledgehammer", "p30l", "p30l_dual", "bonesaw_rusted", "potato_cannon", "scout",
-		"mkg45", "blr", "svd", "vss", "scarssr", "l86", "potato_cannonball", "m9_cursed", "knuckles_rusted", "knuckles_heroic"
-	];
+    if (!gameData)
+        return;
 	
-	var snipers = ["m870", "sv98", "awc", "mosin", "spas12", "model94", "potato_cannon", "scout", "blr"]
-
-	var grenadeTimerWarning = 1.05;
-
-	// var guns = [];
-	// var gunNames = [];
-	// for (var itm in items) {
-	// 	var itmType = items[itm].type;
-	// 	if (itmType == "gun") {
-	// 		items[itm].id = itm;
-	// 		guns.push(items[itm])
-	// 		gunNames.push(itm)
-	// 	}
-	// }
-
-	var curPlayer = game[obfuscate.activePlayer];
-
-	// 	positions.unshift(
-	// 		{
-	// 		pos: curPlayer.pos,
-	// 		time: window.performance.now()/1000
-	// 		})
-
-
-	// 	if(positions.length > 1 && positions[0].pos != positions[1].pos){
-	// 		setTimeout(function(){
-	// 			timeDiff = positions[0].time - positions[1].time
-	// 			distDiff = getDistance(positions[0].pos,positions[1].pos)
-	// 			positions.pop();
-	// 		}, 500)
-	// }
-
-	var bullets = window.gameVars.Game.BulletBarn
-
-	var guns = window.gameVars.Game.GunBarn
-
-	var gunTypes = window.gameVars.Game.GunTypes
-
-	var curWeapon = curPlayer[obfuscate.localData][obfuscate.weapons][curPlayer[obfuscate.localData][[obfuscate.curWeapIdx]]].type
-
-	// console.log(curWeapon)
-
-	var curBulletSpeed = 0;
-
-	if (curPlayer[obfuscate.localData][[obfuscate.curWeapIdx]] < 2) {
-		curBulletSpeed = bullets[guns[curWeapon].bulletType].speed
-	}
-	else {
-		curBulletSpeed = 0
-	}
-
-	// var invWeapon1Name = curPlayer[obfuscate.localData].weapons["0"].type
-	// var invWeapon2Name = curPlayer[obfuscate.localData].weapons["1"].type;
-
-	//switch
-
-	var switchWeapon = function () {
-		if(!game[obfuscate.input].keys["75"]) {
-			setTimeout(function () {
-				game[obfuscate.input].keys["75"] = true;
-				setTimeout(function () {
-					delete game[obfuscate.input].keys["75"]
-				}, guns[curWeapon].switchDelay * 100);
-			}, guns[curWeapon].switchDelay * 100);
-		}
-	}
-
-	if (game[obfuscate.input].mouseButton && snipers.includes(curWeapon)){	
-		switchWeapon()
-	}
-
-	var fullAmmoGuns = {
-		"mp5": 30, "mac10": 32, "ump9": 30, "vector": 33, "famas": 25, "hk416": 30, "m4a1": 30, "mk12": 20, "m249": 100, "qbb97": 75, "ak47": 30, "scar": 20,
-		"dp28": 60, "bar": 20, "mosin": 5, "sv98": 10, "awc": 5, "m39": 20, "garand": 8, "m870": 5, "saiga": 5, "spas12": 9, "m9": 15, "m9_dual": 30, "m93r": 20,
-		"m93r_dual": 40, "glock": 17, "glock_dual": 34, "ot38": 5, "ot38_dual": 10, "deagle": 7, "deagle_dual": 14
-	}
-
-	// var invWeapon1 = invWeapon1Name == "" ? null : guns.find((g) => g.id == invWeapon1Name);
-	// var invWeapon2 = invWeapon2Name == "" ? null : guns.find((g) => g.id == invWeapon2Name);
-
-	// processPlayerSpeed(curPlayer, 0.1);
-
-	// curPlayer.moving = curPlayer.speed > 0.01;
-
-	// if(window.gameVars.Input.Cheat. == true){
-
-	// var pressReload = function () {
-	// 	if(!game[obfuscate.input].keys["82"]) {
-	// 		setTimeout(function () {
-	// 			game[obfuscate.input].keys["82"] = true;
-	// 			setTimeout(function () {
-	// 				delete game[obfuscate.input].keys["82"]
-	// 			}, 100);
-	// 		}, 50);
-	// 	}
-	// }
-
-	// 	var autoReloadGuns = function () {
-	// 		for (let gunName in fullAmmoGuns) {
-	// 			if (curWeapon.id == gunName && (curWeapon.id == invWeapon1Name && curPlayer[obfuscate.localData].weapons["0"].ammo < fullAmmoGuns[gunName])) {
-	// 				pressReload();
-	// 			} else if (curWeapon.id == gunName && (curWeapon.id == invWeapon2Name && curPlayer[obfuscate.localData].weapons["1"].ammo < fullAmmoGuns[gunName])) {
-	// 				pressReload();
-	// 			}
-	// 		}	
-	// 	}
-
-	// var weaponSwitcher = function () {
-	// 	if (curPlayer[obfuscate.localData][[obfuscate.curWeapIdx]] == 2 || curPlayer[obfuscate.localData][[obfuscate.curWeapIdx]] == 1) {
-	// 		pressOne();
-	// 		return;
-	// 	}
-
-	// 	if (curPlayer[obfuscate.localData][[obfuscate.curWeapIdx]] == 0) {
-	// 		pressTwo();
-	// 		return;
-	// 	}
-	// }
-
-	// if (window.gameVars.Input.Cheat.SwitchWeaponFirst) {
-	// 	weaponSwitcher();
-	// }
-
-
-	// if(window.menu.UserSetting.shoot.autoReloadEnabled) {
-	// 	autoReloadGuns();
-	// }
-	// Laser
-
-	// var laser = state.Laser;
-
-	// if(curBullet)
-	// {
-	// 	laser.active = true;
-	// 	laser.range = curBullet.distance * mapScale;
-	// 	laser.direction = Math.atan2(curPlayer[obfuscate.netData].dir.x, curPlayer[obfuscate.netData].dir.y) - Math.PI / 2;
-	// 	laser.angle = (curWeapon.shotSpread + (curPlayer.moving ? curWeapon.moveSpread : 0.0)) * 0.01745329252 / 2;
-	// }
-	// else
-	// {
-	// 	laser.active = false;
-	// }
-
-	// Zoom
-
-	var currentZoom = window.gameVars.ZoomLevel;
-
-	currentZoom *= 1.0 + window.menu.UserSetting.look.zoomSpeed / 100 * window.gameVars.Input.Cheat.GetZoomDelta();
-	// currentZoom = currentZoom < 0.1 ? 0.1 : currentZoom > 1.0 ? 1.0 : currentZoom;
-
-	if (!window.gameVars.Menu && window.menu.UserSetting.look.zoomEnabled)
-		window.gameVars.ZoomLevel = currentZoom;
-
-	// Detect enimies
-
-	var enimies = detectEnimies();
-	window.gameVars.Game.Enimies = enimies;
-
-	// Update enemy lines
-
-	window.gameVars.Game.EnemyLines.points = enimies
-		.filter((enemy) => !enemy.teammate)
-		.map((enemy) => {
-			return {
-				x: (enemy.pos.x - curPlayer.pos.x) * mapScale,
-				y: (curPlayer.pos.y - enemy.pos.y) * mapScale
-			};
-		});
-
-	// Update autoaim
-	var target = null;
-
-	var alwaysOn = window.menu.UserSetting.shoot.autoAimAlwaysOnEnabled;
-	if (alwaysOn) {
-		window.gameVars.Input.Cheat.AutoAimPressed = !game.spectating;
-	}
-
-	window.gameVars.Input.Cheat.ShowNamesPressed = true;
-
-	function randInt(min, max) {
-		return Math.floor(Math.random() * (max - min)) + min;
-	}
-
-	if (!window.gameVars.Input.Cheat.AutoAimPressed == true && enimies.length != 0)
-	// if(window.menu.UserSetting.shoot.autoAimEnabled && window.gameVars.Input.Cheat.AutoAimPressed)
-	{
-
-		var mousePos = game[obfuscate.camera].pointToScreen(window.gameVars.Input.Mouse.Pos);
-
-		var mouseVec =
-		{
-			x: mousePos.x - curPlayer.pos.x,
-			y: mousePos.y - curPlayer.pos.y
-		};
-
-		var enemiesInSight = enimies
-		var i;
-		posListX = []
-		posListY = []
-		distList = []
-		downedList = []
-		downedDist = []
-		for (i = 0; i < enemiesInSight.length; i++) {
-			posListX.push(enemiesInSight[i].pos.x)
-			posListY.push(enemiesInSight[i].pos.y)
-			distList.push(parseInt(getDistance2(posListX[i], posListY[i], curPlayer.pos.x, curPlayer.pos.y)))
-
-		}
-		enemyIndex = distList.indexOf(Math.min(...distList))
-		target = enemiesInSight[enemyIndex]
-		if (target[obfuscate.netData][obfuscate.downed] || target[obfuscate.netData][obfuscate.layer] != curPlayer[obfuscate.netData][obfuscate.layer]) {
-			if (enemiesInSight.length == 1) {
-				target = enemiesInSight[distList.indexOf(Math.min(...distList))]
-			}
-			else if (enemiesInSight.length > 1) {
-				for (k = 0; k < enemiesInSight.length; k++) {
-					if(enemiesInSight[k][obfuscate.netData][obfuscate.downed]){
-						downedList.push(enemiesInSight[k])
-						downedDist.push(distList[k])
-						enemiesInSight.splice(k, 1)
-						distList.splice(k, 1)
-					}
-				}
-				if(enemiesInSight.length == 0 || window.gameVars.Input.Cheat.SpinPressed){
-					target = downedList[downedDist.indexOf(Math.min(...downedDist))]
-				}
-				else if (enemiesInSight.length > 0 && !window.gameVars.Input.Cheat.SpinPressed){
-					target = enemiesInSight[distList.indexOf(Math.min(...distList))]
-				}				
-			}
-			
-		}
-		processEnemy(target)
-	}
-
-	window.gameVars.Game.Target = target;
-	(function () {
-
-		//Cross spinbot number = 4
-		// spinListX = [curPlayer.pos.x, curPlayer.pos.x + 50, curPlayer.pos.x, curPlayer.pos.x - 50]
-		// spinListY = [curPlayer.pos.y - 50, curPlayer.pos.y, curPlayer.pos.y + 50, curPlayer.pos.y]
-
-		//square spinbot number = 8	
-		// spinListX = [curPlayer.pos.x, curPlayer.pos.x + 1000, curPlayer.pos.x + 1000, curPlayer.pos.x + 1000, curPlayer.pos.x, curPlayer.pos.x - 1000, curPlayer.pos.x - 1000, curPlayer.pos.x - 1000]
-		// spinListY = [curPlayer.pos.y + 1000, curPlayer.pos.y + 1000, curPlayer.pos.y, curPlayer.pos.y - 1000, curPlayer.pos.y - 1000, curPlayer.pos.y - 1000, curPlayer.pos.y, curPlayer.pos.y + 1000]
-		
-		//triangle spinbot number = 12
-		// spinListX = [curPlayer.pos.x, curPlayer.pos.x + 1000, curPlayer.pos.x - 1000,
-		// curPlayer.pos.x + 1000, curPlayer.pos.x - 1000, curPlayer.pos.x - 1000,
-		// curPlayer.pos.x, curPlayer.pos.x - 1000, curPlayer.pos.x + 1000,
-		// curPlayer.pos.x - 1000, curPlayer.pos.x + 1000, curPlayer.pos.x + 1000,
-		// ]
-
-		// spinListY = [curPlayer.pos.y + 1000, curPlayer.pos.y - 1000, curPlayer.pos.y - 1000,
-		// curPlayer.pos.y, curPlayer.pos.y - 1000, curPlayer.pos.y + 1000,
-		// curPlayer.pos.y - 1000, curPlayer.pos.y + 1000, curPlayer.pos.y + 1000,
-		// curPlayer.pos.y, curPlayer.pos.y + 1000, curPlayer.pos.y - 1000,
-		// ]
-		
-		// console.log(spinListX.length, spinListY.length)
-
-
-		if(window.menu.UserSetting.shoot.spinBotEnabled){
-			window.gameVars.Input.Mouse.SpinActive = true
-		}
-		else if(!window.menu.UserSetting.shoot.spinBotEnabled) {
-			window.gameVars.Input.Mouse.SpinActive = false
-			disableSpin = true
-		}
-
-		if (window.gameVars.Input.Cheat.SpinPressed) {
-			window.gameVars.Input.Mouse.SpinActive = false
-		}
-
-		if (target) {
-			var pos = target.pos;
-			var prediction = target.prediction ? target.prediction : { x: 0, y: 0 };
-			
-			if (window.gameVars.Input.Cheat.AutoAimPressed == false) {
-				window.gameVars.Input.Mouse.AimActive = true;
-				window.gameVars.Input.Mouse.AimPos = game[obfuscate.camera].pointToScreen({ x: pos.x + prediction.x, y: pos.y + prediction.y });
-
-				game[obfuscate.input][obfuscate.mousePosition].x = window.gameVars.Input.Mouse.AimPos.x;
-		
-				game[obfuscate.input][obfuscate.mousePosition].y = window.gameVars.Input.Mouse.AimPos.y;
-
-			}
-			else if (window.gameVars.Input.Cheat.AutoAimPressed == true) {
-				window.gameVars.Input.Mouse.AimActive = false;
-			}
-
-		}
-
-		else if (window.gameVars.Input.Mouse.SpinActive) {
-			window.gameVars.Input.Mouse.AimActive = false;
-			if (game[obfuscate.input].mouseButton) {
-				window.gameVars.Input.Mouse.SpinActive = false
-				return;
-			}
-
-			if (number == 361) {
-				// spinListX.reverse()
-				// spinListY.reverse()
-				number = 0
-			}
-
-			window.gameVars.Input.Mouse.SpinPos = game[obfuscate.camera].pointToScreen({
-				x: Math.cos(number) * 999999 + window.innerWidth,
-				y: Math.sin(number) * 999999 + window.innerHeight
-			})
-
-			game[obfuscate.input][obfuscate.mousePosition].x = window.gameVars.Input.Mouse.SpinPos.x;
-
-			game[obfuscate.input][obfuscate.mousePosition].y = window.gameVars.Input.Mouse.SpinPos.y;
+    //Clicking 'G' will leave your game and start a team game instantly.
+    if(game[obfuscate.input].keys["71"]){
+        game[obfuscate.input].keys["32"] = false
+        document.getElementById("btn-game-quit").click()
+        setTimeout(document.getElementById("btn-start-team").click(), 50)
+        return;
+}
+    //Clicking 'H' will leave your game and start a solos game instantly.
+    if(game[obfuscate.input].keys["72"]){
+        game[obfuscate.input].keys["32"] = false
+        document.getElementById("btn-game-quit").click()
+        setTimeout(document.getElementById("btn-start-mode-0").click(), 50)
+        return;
+    }
+    
+    //Render trees, bushes, and tables as semi-transparent (alpha = 0.5)
+    var updateObstacleAlpha = function(obstacle) {
+        if(!obstacle || !obstacle.img)
+            return;
+        
+        var alpha = 1.0;
+        
+        var setting = window.menu.UserSetting.look;
+        
+        if(obstacle.img.includes("map-tree"))
+            alpha = 0.5
+        if(obstacle.img.includes("map-bush"))
+            alpha = 0.5
+        if(obstacle.img.includes("map-table"))
+            alpha = 0.5
+
+        obstacle.sprite.alpha = alpha;
+    }
+
+    if (!window.menu || !window.menu.UserSetting)
+        return;
+    // Local functions for math and physics calculations
+
+    var getDistance = function (p1, p2) {
+        var dx = p2.x - p1.x, dy = p2.y - p1.y;
+        return Math.sqrt(dx * dx + dy * dy);
+    };
+
+    var getDistance2 = function (x1, y1, x2, y2) {
+        return Math.sqrt(Math.pow((x1 - x2), 2) + Math.pow((y1 - y2), 2))
+    }
+
+    var getVector = function (x, y) {
+        return Math.sqrt((x*x) + (y*y)) 
+    }
+
+    var getSecondsElapsed = function (time) {
+        return (window.performance.now() - time) / 1000;
+    };
+
+    var getTimeElapsed = function (time) {
+        return (window.performance.now() - time);
+    };
+
+    //Detect live enemies that are in the same layer, used for live aimbot.
+    var detectEnimies = function () {
+        var selfId = game[obfuscate.activeId];
+        var selfTeamId = game[obfuscate.playerBarn][obfuscate.playerInfo][game[obfuscate.activeId]].teamId;
+        var objectIds = Object.keys(game[obfuscate.objectCreator].idToObj);
+        var playerIds = Object.keys(game[obfuscate.playerBarn][obfuscate.playerInfo]);
+        var allPlayers = game[obfuscate.playerBarn][obfuscate.playerInfo];
+        var firstPlayerId = Object.keys(allPlayers)[0];
+        var firstPlayerObj = game[obfuscate.objectCreator].idToObj[firstPlayerId];
+        var allPlayerDict = {};
+
+        var isTeammate = function (plrId, plrObj) {
+            var isTmmt = game[obfuscate.playerBarn][obfuscate.playerInfo][plrId].teamId == selfTeamId;
+            plrObj.teammate = isTmmt;
+            return isTmmt;
+        }
+
+        var isUnderground = function (plrObj) {
+            if(plrObj[obfuscate.netData][obfuscate.layer] == 0 && curPlayer[obfuscate.netData][obfuscate.layer] == 1){
+                return true
+            }
+            if(plrObj[obfuscate.netData][obfuscate.layer] == 1 && curPlayer[obfuscate.netData][obfuscate.layer] == 0){
+                return true
+            }
+
+        }
+
+        return playerIds
+            .filter(function (id) {
+                var playerObject = game[obfuscate.objectCreator].idToObj[id];
+                return playerObject &&
+                    (!isTeammate(id, playerObject)) &&
+                    (!playerObject[obfuscate.netData][obfuscate.dead]) &&
+                    (!playerObject[obfuscate.netData][obfuscate.downed]) &&
+                    (!isUnderground(playerObject)) &&
+                    id != selfId;
+            })
+            .map(function (id) {
+                return game[obfuscate.objectCreator].idToObj[id];
+            });
+    }  
+    
+    //Detect downed enemies in the same layer, used for downed aimbot.
+    var detectDownedEnimies = function () {
+        var selfId = game[obfuscate.activeId];
+        var selfTeamId = game[obfuscate.playerBarn][obfuscate.playerInfo][game[obfuscate.activeId]].teamId;
+        var objectIds = Object.keys(game[obfuscate.objectCreator].idToObj);
+        var playerIds = Object.keys(game[obfuscate.playerBarn][obfuscate.playerInfo]);
+        var allPlayers = game[obfuscate.playerBarn][obfuscate.playerInfo];
+        var firstPlayerId = Object.keys(allPlayers)[0];
+        var firstPlayerObj = game[obfuscate.objectCreator].idToObj[firstPlayerId];
+        var allPlayerDict = {};
+
+        var isTeammate = function (plrId, plrObj) {
+            var isTmmt = game[obfuscate.playerBarn][obfuscate.playerInfo][plrId].teamId == selfTeamId;
+            plrObj.teammate = isTmmt;
+            return isTmmt;
+        }
+
+        var isUnderground = function (plrObj) {
+            if(plrObj[obfuscate.netData][obfuscate.layer] == 0 && curPlayer[obfuscate.netData][obfuscate.layer] == 1){
+                return true
+            }
+            if(plrObj[obfuscate.netData][obfuscate.layer] == 1 && curPlayer[obfuscate.netData][obfuscate.layer] == 0){
+                return true
+            }
+
+        }
+
+        return playerIds
+            .filter(function (id) {
+                var playerObject = game[obfuscate.objectCreator].idToObj[id];
+                return playerObject &&
+                    (!isTeammate(id, playerObject)) &&
+                    (!playerObject[obfuscate.netData][obfuscate.dead]) &&
+                    (playerObject[obfuscate.netData][obfuscate.downed]) &&
+                    (!isUnderground(playerObject)) &&
+                    id != selfId;
+            })
+            .map(function (id) {
+                return game[obfuscate.objectCreator].idToObj[id];
+            });
+    }  
+
+    //Detect live and downed enemies, used for drawing lines.
+    var detectAll = function () {
+        var selfId = game[obfuscate.activeId];
+        var selfTeamId = game[obfuscate.playerBarn][obfuscate.playerInfo][game[obfuscate.activeId]].teamId;
+        var objectIds = Object.keys(game[obfuscate.objectCreator].idToObj);
+        var playerIds = Object.keys(game[obfuscate.playerBarn][obfuscate.playerInfo]);
+        var allPlayers = game[obfuscate.playerBarn][obfuscate.playerInfo];
+        var firstPlayerId = Object.keys(allPlayers)[0];
+        var firstPlayerObj = game[obfuscate.objectCreator].idToObj[firstPlayerId];
+        var allPlayerDict = {};
+
+        var isTeammate = function (plrId, plrObj) {
+            var isTmmt = game[obfuscate.playerBarn][obfuscate.playerInfo][plrId].teamId == selfTeamId;
+            plrObj.teammate = isTmmt;
+            return isTmmt;
+        }
+
+        return playerIds
+            .filter(function (id) {
+                var playerObject = game[obfuscate.objectCreator].idToObj[id];
+                return playerObject &&
+                    (!isTeammate(id, playerObject)) &&
+                    (!playerObject[obfuscate.netData][obfuscate.dead]) &&
+                    id != selfId;
+            })
+            .map(function (id) {
+                return game[obfuscate.objectCreator].idToObj[id];
+            });
+    }  
+
+    //Process enemies speed, time taken, in order to predict their position.
+    var processEnemy = function (enemy) {
+        if (!enemy)
+            return;
+ 
+        enemy.prediction = { x: 0.0, y: 0.0 };
+        processes.unshift(
+            {
+                pos: enemy.pos,
+                curPos: curPlayer.pos,
+                time: window.performance.now() / 1000,
+            })
+
+        curPosX = 0
+        curPosY = 0
+
+        enemyPosX = 0
+        enemyPosY = 0
+
+        avgSpeedX = 0
+        avgSpeedY = 0
+
+        avgSpeedX2 = 0
+        avgSpeedY2 = 0
 	
-			number += 1
-
-			return;
-			
-	}
-
-		// else if (window.gameVars.Input.Cheat.SpinPressed || disableSpin) {
-		// 	window.gameVars.Input.Mouse.SpinActive = false
-		// 	window.gameVars.Input.Mouse.AimActive = false;
-		// }
+	//Takes 2 consecutive times and distances (X and Y), takes current enemy and player positions (X and Y). 
+        if (processes.length > 3) { 
+            
+                curPosX = processes[0].curPos.x
+                curPosY = processes[0].curPos.y
+                enemyPosX = processes[0].pos.x 
+                enemyPosY = processes[0].pos.y
+               
+                timeDiff1 = processes[0].time - processes[1].time
+                distDiffX1 = processes[0].pos.x - processes[1].pos.x
+                distDiffY1 = processes[0].pos.y - processes[1].pos.y
+                
+                timeDiff2 = processes[1].time - processes[2].time
+                distDiffX2 = processes[1].pos.x - processes[2].pos.x
+                distDiffY2 = processes[1].pos.y - processes[2].pos.y
 		
-	}
-	)();
+		//Calculates X speed and Y speed for both of those times and distances taken.
+                avgSpeedX =
+                    (distDiffX1) / (timeDiff1)
+
+                avgSpeedY =
+                    (distDiffY1) / (timeDiff1)
+
+                avgSpeedX2 =
+                    (distDiffX2) / (timeDiff2)
+                   
+                avgSpeedY2 =
+                    (distDiffY2) / (timeDiff2)
+
+        }
+	    
+	//If using melee, no prediction  due to hitscan nature of melees.
+        if (curBulletSpeed == 0){
+            enemy.prediction = {
+                x: 0,
+                y: 0
+            };
+            return;
+        }
+ 	
+	//For projectiles (guns), uses distance = speed * time (Enemy Speed * (Enemy Distance / Bullet Speed)) averaged out over both points.     
+        else{
+            enemy.prediction = {
+                x:
+                (
+                    ((avgSpeedX) * (getDistance2(curPosX, curPosY, enemyPosX, enemyPosY) / curBulletSpeed)) +
+                    ((avgSpeedX2) * (getDistance2(curPosX, curPosY, enemyPosX, enemyPosY) / curBulletSpeed))
+
+                ) / 2,
+ 
+                y:
+                (
+                    ((avgSpeedY) * (getDistance2(curPosX, curPosY, enemyPosX, enemyPosY) / curBulletSpeed)) + 
+                    ((avgSpeedY2) * (getDistance2(curPosX, curPosY, enemyPosX, enemyPosY) / curBulletSpeed))
+
+                ) / 2
 
 
-	// a = []
-	// b = []
-	// for(p=0;p<100;p++) {
-	// 	a.append(Math.random() * 1280)
-	// 	b.append(Math.random() * 720)
-	// }
-	// for (l=0;l<100;l++){
-	// 	window.gameVars.Input.Mouse.AimPos = game[obfuscate.camera].pointToScreen({ x: a[l], y: b[l]});
-	// }
+        }
+ 
+ 
+    }
+}
 
-	// window.gameVars.Input.Mouse.AimPos = game[obfuscate.camera].pointToScreen({ x: 0, y: 0 });
-	// window.gameVars.Input.Mouse.AimPos = game[obfuscate.camera].pointToScreen({ x: 640, y: 0 });
-	// window.gameVars.Input.Mouse.AimPos = game[obfuscate.camera].pointToScreen({ x: 1280, y: 0 });
-	// window.gameVars.Input.Mouse.AimPos = game[obfuscate.camera].pointToScreen({ x: 1280, y: 360 });
-	// window.gameVars.Input.Mouse.AimPos = game[obfuscate.camera].pointToScreen({ x: 1280, y: 720 });
-	// window.gameVars.Input.Mouse.AimPos = game[obfuscate.camera].pointToScreen({ x: 640, y: 720 });
-	// window.gameVars.Input.Mouse.AimPos = game[obfuscate.camera].pointToScreen({ x: 0, y: 720 });
-	// window.gameVars.Input.Mouse.AimPos = game[obfuscate.camera].pointToScreen({ x: 0, y: 360 });
+    // Local variables
+    var curPlayer = game[obfuscate.activePlayer];
 
+    game[obfuscate.map][obfuscate.obstaclePool][obfuscate.pool].forEach(updateObstacleAlpha); //Call our obstacle alpha function for all sprites in the current viewable pool.
+   
+    var mapScale = game[obfuscate.camera].ppu; //Scale of map
 
-	// Grenade timer
-	// 	if(window.menu.UserSetting.shoot.fragGrenadeTimerEnabled && curPlayer.weapType == "frag" && !game[obfuscate.pieTimer][obfuscate.activeTimer] && game[obfuscate.input].mouseButton) {
-	// 		runTimer("FRAG", 4.0);
-	// 	}	
-	// 	if(window.menu.UserSetting.shoot.fragGrenadeTimerEnabled && curPlayer.weapType == "mirv" && !game[obfuscate.pieTimer][obfuscate.activeTimer] && game[obfuscate.input].mouseButton) {
-	// 		runTimer("MIRV", 4.0);
-	// 	}
+    var snipers = ["m870", "sv98", "awc", "mosin", "spas12", "model94", "potato_cannon", "scout_elite", "blr"] //Weapons for quickswitching
 
+    var bullets = window.gameVars.Game.BulletBarn //Bullets and their data
 
+    var guns = window.gameVars.Game.GunBarn //Guns and their data
 
-	// 	if(game[obfuscate.pieTimer][obfuscate.activeTimer]  && game[obfuscate.pieTimer].clientData.label == "FRAG")
-	// 	{
-	// 		if(!game[obfuscate.input].mouseButton)
-	// 		{	
+    var gunTypes = window.gameVars.Game.GunTypes //Melees actually
 
-	// 			stopTimer();
-	// 			return;
-	// 		}
+    var perks = window.gameVars.Game.Perks //Perks, not too useful
 
-	// 		if(game[obfuscate.pieTimer].clientData.duration - game[obfuscate.pieTimer].clientData.elapsed < grenadeTimerWarning)
-	// 		{
-	// 			game[obfuscate.pieTimer].timerBackground._tint = 0xff0000;
-	// 			game[obfuscate.pieTimer].outerCircle._tint = 0xff0000;
-	// 			game[obfuscate.pieTimer].counterText._tint = 0xff0000;
-	// 			game[obfuscate.pieTimer].labelText._tint = 0xff0000;
-	// 		}
-	// 	}
+    var curWeapon = curPlayer[obfuscate.localData][obfuscate.weapons][curPlayer[obfuscate.localData][[obfuscate.curWeapIdx]]].type //Current Weapon Name
 
-	// 	if(game[obfuscate.pieTimer][obfuscate.activeTimer]  && game[obfuscate.pieTimer].clientData.label == "MIRV")
-	// 	{
-	// 		if(!game[obfuscate.input].mouseButton)
-	// 		{	
+    var curBulletSpeed = 0; //Define the speed of our weapon's bullet
 
-	// 			stopTimer();
-	// 			return;
-	// 		}
+    if (curPlayer[obfuscate.localData][[obfuscate.curWeapIdx]] < 2) { 
+        curBulletSpeed = bullets[guns[curWeapon].bulletType].speed
+    }
+    else {
+        curBulletSpeed = 0
+    }
+    //If gun is held currently, bullet speed is that gun's bullet speed. Else, speed is 0 (melees).
+    
+    //AutoQuickSwitch: clicks 'K' (equip other gun), when one bullet is fired from one of the snipers.
+    var switchWeapon = function () {
+        if (!game[obfuscate.input].keys["75"]) {
+            setTimeout(function () {
+                game[obfuscate.input].keys["75"] = true;
+                setTimeout(function () {
+                    delete game[obfuscate.input].keys["75"]
+                }, guns[curWeapon].switchDelay * 100);
+            }, guns[curWeapon].switchDelay * 100);
+        }
+    }
 
-	// 		if(game[obfuscate.pieTimer].clientData.duration - game[obfuscate.pieTimer].clientData.elapsed < grenadeTimerWarning)
-	// 		{
-	// 			game[obfuscate.pieTimer].timerBackground._tint = 0xff0000;
-	// 			game[obfuscate.pieTimer].outerCircle._tint = 0xff0000;
-	// 			game[obfuscate.pieTimer].counterText._tint = 0xff0000;
-	// 			game[obfuscate.pieTimer].labelText._tint = 0xff0000;
-	// 		}
-	// 	}
+    if (game[obfuscate.input].mouseButton && snipers.includes(curWeapon)) { 
+        switchWeapon()
+    }
+    
+    //Display Soda Bar above health, rounded to nearest 0.5.
+    window.gameVars.UI.FPSText.text("BOOST: " + Math.round(2*Number(curPlayer[obfuscate.localData][obfuscate.sodaBar])) / 2);
 
-	// Bump fire
-	window.gameVars.Input.Cheat.RepeatFire = window.menu.UserSetting.shoot.bumpFireEnabled && game[obfuscate.input].mouseButton && autoFireGuns.includes(curPlayer.weapTypeOld);
-	// Auto loot	
-	// window.gameVars.Input.Cheat.RepeatInteraction = window.menu.UserSetting.loot.autolootEnabled && (getSecondsElapsed(state.LastTimeDropItem) > window.menu.UserSetting.loot.autolootDropDelay) && needToLoot();
-	// var pressF = function () {
-	// 	if(!game[obfuscate.input].keys["70"]) {
-	// 		setTimeout(function() {
-	// 			game[obfuscate.input].keys["70"] = true;
-	// 			setTimeout(function() {
-	// 				delete game[obfuscate.input].keys["70"]
-	// 			}, 90);
-	// 		}, 0);
-	// 	}
-	// }
+    //AutoLoot: spams loot when near loot.
+    
+    //Current name of weapons 1 and 2.
+    var invWeapon1Name = curPlayer[obfuscate.localData][obfuscate.weapons][0].type
+    var invWeapon2Name = curPlayer[obfuscate.localData][obfuscate.weapons][1].type;
 
-	// if(window.gameVars.Input.Cheat.RepeatInteraction) {
-	// 	pressF();
-	// }
+    //Find out how far loot is.
+    var getLootRange = function(loot) {
+        var lootDist = getDistance(loot.pos, curPlayer.pos) - loot.rad - gameData.player.radius
+
+        if(lootDist < window.menu.UserSetting.loot.autolootSafeDistance && loot.active){
+            return true        
+        }
+        else{
+            return false
+        }
+    }
+
+    //Returns true if we need to loot, otherwise returns false
+    var needToLoot = function() {
+	
+	//If inventory does not have 2 guns.
+        var needGuns = invWeapon1Name == "" || invWeapon2Name == ""
+	
+	//Filters loot that is active and within the loot range.
+        var loot = game[obfuscate.lootBarn][obfuscate.lootPool][obfuscate.pool].filter((l) => l.active && getLootRange(l))
+
+	//If there's loot that is within the range, active, and player is currently using melee, or need guns, then loot.
+        if((loot.length > 0 && curPlayer[obfuscate.localData][[obfuscate.curWeapIdx]] > 1) || needGuns){
+            return true
+        }
+	
+	//Don't loot if the gun slots are full
+        if(!needGuns){
+            return false
+        }
+    };
+
+    // Zoom: Control zoom of window, allowing player to see more
+    if(!game[obfuscate.activePlayer][obfuscate.netData]){
+        window.gameVars.ZoomDelta = 0
+    }
+    var currentZoom = window.gameVars.ZoomLevel;
+
+    //Adds 0.1 * ZoomDelta every scroll, caps at 0.5 (out) and 1.1 (in)
+    currentZoom += 0.1 * window.gameVars.Input.Cheat.GetZoomDelta()
+    currentZoom = currentZoom < 0.5 ? 0.5 : currentZoom > 1.1 ? 1.1 : currentZoom;
+
+    if (!window.gameVars.Menu && window.menu.UserSetting.look.zoomEnabled){
+        window.gameVars.ZoomLevel = currentZoom;
+    }
+    
+    // Detect enimies
+
+    var enimies = detectEnimies(); //Live
+    
+    var downed = detectDownedEnimies() //Downed
+    
+    var all = detectAll() //All
+    
+    window.gameVars.Game.Enimies = enimies;
+
+    // Update enemy lines: for all
+    allPoints = all.map((enemy) => {
+            return {
+                x: ((enemy.pos.x) - curPlayer.pos.x) * mapScale,
+                y: (curPlayer.pos.y - (enemy.pos.y)) * mapScale
+            };
+        });
+
+    window.gameVars.Game.EnemyLines.points = allPoints
+
+    //Draw black line from player to enemy.
+    var updateEnemyLines = function() {
+            
+        var enemyLines = window.gameVars.Game.EnemyLines;
+
+        var points = enemyLines.points
+        var draw = enemyLines.draw;
+
+        if(!draw){
+            draw = new window.PIXI.Graphics();
+            enemyLines.draw = draw;
+            game[obfuscate.activePlayer].container.addChild(draw);
+            game[obfuscate.activePlayer].container.setChildIndex(draw, 0);
+        }
+
+        draw.clear();
+        draw.beginFill();
+        draw.lineStyle(2, 000000);
+
+        points.forEach(function(pnt) {
+            draw.moveTo(0, 0);
+            draw.lineTo(pnt.x, pnt.y);
+        });
+
+        draw.endFill();
+ }
+
+    //AutoFollow: Automatically moves to enemy's center position.
+    
+    //Functions for movements, WASD on the keyboard respectively.
+    var W = function () {
+        game[obfuscate.input].keys["87"] = true;
+    }
+
+    var S = function () {
+        game[obfuscate.input].keys["83"] = true;
+    }
+
+    var A = function () {
+        game[obfuscate.input].keys["65"] = true;     
+    }
+
+    var D = function () {
+        game[obfuscate.input].keys["68"] = true;
+    }
+    
+    //Functions for stopping movement, WASD.
+    var cancelW = function () {
+        delete game[obfuscate.input].keys["87"]
+    }
+
+    var cancelS = function () {
+        delete game[obfuscate.input].keys["83"]
+    }
+
+    var cancelA = function () {
+        delete game[obfuscate.input].keys["65"]    
+    }
+
+    var cancelD = function () {
+        delete game[obfuscate.input].keys["68"]
+    }
+     
+    //Update Names: shows names of enemies
+     var updateNames = function(player) {
+         if(!player || !player.nameText || player.teammate)
+          return;
+            
+         var nameText = player.nameText;
+            
+         if(window.gameVars.Input.Cheat.ShowNamesPressed)
+         {
+             nameText.visible = true;
+
+             nameText.tint = 0xffd700;
+        
+             nameText.scale.set(1, 1);
+         }
+     }
+
+    // AutoAim: Aims at enemies with prediction
+    var target = null;
+
+    window.gameVars.Input.Cheat.ShowNamesPressed = true;
+
+    //If there are live enemies and the auto aim cancel button is not pressed, begin calculating target.
+    if (!window.gameVars.Input.Cheat.AutoAimPressed && enimies.length > 0)
+    {
+	//List of all distances for current enemies in sight.
+        distList = []
+        
+	//Push all enemy distances from player to distList.
+        for (i = 0; i < enimies.length; i++) {
+            distList.push(parseInt(getDistance2(enimies[i].pos.x, enimies[i].pos.y, curPlayer.pos.x, curPlayer.pos.y)))
+        }
+        
+	//Target is closest one to player.
+        target = enimies[distList.indexOf(Math.min(...distList))]
+
+    }
+	
+    //If there are downed enemies and the auto aim cancel button is not pressed, begin calculating target.
+    if (!window.gameVars.Input.Cheat.AutoAimPressed && downed.length > 0)
+    {
+	//Downed distance list.
+        downedDist = []
+        
+	//Push all downed enemy distances from player to downedDist.
+        for (j = 0; j < downed.length; j++) {
+            downedDist.push(parseInt(getDistance2(downed[j].pos.x, downed[j].pos.y, curPlayer.pos.x, curPlayer.pos.y)))
+        }
+
+	//If SpinBot button pressed or there are no live enemies, target is the closest downed enemy.
+        if(window.gameVars.Input.Cheat.SpinPressed || enimies.length == 0){
+            target = downed[downedDist.indexOf(Math.min(...downedDist))]
+        }
+
+    }
+	
+    //Apply prediction calculations to this target.
+    processEnemy(target)
+
+    window.gameVars.Game.Target = target;
+
+    (function () {
+	//Spinbot patterns I have created.
+	    
+        //X cross number = 8
+        // spinListX = [curPlayer.pos.x + 50, curPlayer.pos.x + 50, curPlayer.pos.x + 50, curPlayer.pos.x + 50, curPlayer.pos.x - 50, curPlayer.pos.x - 50, curPlayer.pos.x - 50, curPlayer.pos.x - 50]
+        // spinListY = [curPlayer.pos.y - 50, curPlayer.pos.y - 50, curPlayer.pos.y + 50, curPlayer.pos.y + 50, curPlayer.pos.y + 50, curPlayer.pos.y + 50, curPlayer.pos.y - 50, curPlayer.pos.y - 50]
+        
+        //L number = 2
+        // spinListX = [curPlayer.pos.x, curPlayer.pos.x, curPlayer.pos.x + 50, curPlayer.pos.x + 50]
+        // spinListY = [curPlayer.pos.y + 50, curPlayer.pos.y + 50, curPlayer.pos.y, curPlayer.pos.y]
+
+        //Windmill spinbot number = 4
+        // spinListX = [curPlayer.pos.x, curPlayer.pos.x, curPlayer.pos.x + 50, curPlayer.pos.x - 50]
+        // spinListY = [curPlayer.pos.y - 50, curPlayer.pos.y + 50, curPlayer.pos.y, curPlayer.pos.y]
+
+        //square spinbot number = 8 
+        // spinListX = [curPlayer.pos.x, curPlayer.pos.x + 1000, curPlayer.pos.x + 1000, curPlayer.pos.x + 1000, curPlayer.pos.x, curPlayer.pos.x - 1000, curPlayer.pos.x - 1000, curPlayer.pos.x - 1000]
+        // spinListY = [curPlayer.pos.y + 1000, curPlayer.pos.y + 1000, curPlayer.pos.y, curPlayer.pos.y - 1000, curPlayer.pos.y - 1000, curPlayer.pos.y - 1000, curPlayer.pos.y, curPlayer.pos.y + 1000]
+
+        //triangle spinbot number = 12
+        // spinListX = [curPlayer.pos.x, curPlayer.pos.x + 1000, curPlayer.pos.x - 1000,
+        // curPlayer.pos.x + 1000, curPlayer.pos.x - 1000, curPlayer.pos.x - 1000,
+        // curPlayer.pos.x, curPlayer.pos.x - 1000, curPlayer.pos.x + 1000,
+        // curPlayer.pos.x - 1000, curPlayer.pos.x + 1000, curPlayer.pos.x + 1000,
+        // ]
+
+        // spinListY = [curPlayer.pos.y + 1000, curPlayer.pos.y - 1000, curPlayer.pos.y - 1000,
+        // curPlayer.pos.y, curPlayer.pos.y - 1000, curPlayer.pos.y + 1000,
+        // curPlayer.pos.y - 1000, curPlayer.pos.y + 1000, curPlayer.pos.y + 1000,
+        // curPlayer.pos.y, curPlayer.pos.y + 1000, curPlayer.pos.y - 1000,
+        // ]
+
+	//If SpinBot is enabled, then spinning is active.
+        if (window.menu.UserSetting.shoot.spinBotEnabled) {
+            window.gameVars.Input.Mouse.SpinActive = true
+        }
+	    
+	//Otherwise spinning is not active.
+        else if (!window.menu.UserSetting.shoot.spinBotEnabled) {
+            window.gameVars.Input.Mouse.SpinActive = false
+            disableSpin = true
+        }
+	
+	//If the SpinBot bind is pressed, spinning is not active.
+        if (window.gameVars.Input.Cheat.SpinPressed) {
+            window.gameVars.Input.Mouse.SpinActive = false
+        }
+
+	//If caps lock is pressed, all pre-existing movements will be cancelled.
+        if(game[obfuscate.input].keys["20"] == true){
+            cancelW()
+            cancelA()
+            cancelS()
+            cancelD()
+        }
+        
+	//Main Aimbot / Spinbot Loop.
+	
+	//Aimbot: If target exists, aiming is true, aim at the current target position + the prediction caclculated. Override the mouse position to the aiming position.
+        if (target) {
+            var pos = target.pos;
+            var distance = target.distance
+            var prediction = target.prediction ? target.prediction : { x: 0, y: 0 };
+
+            if (window.gameVars.Input.Cheat.AutoAimPressed == false) {           
+                window.gameVars.Input.Mouse.AimActive = true;
+                window.gameVars.Input.Mouse.AimPos = game[obfuscate.camera].pointToScreen({ x: pos.x + prediction.x, y: pos.y + prediction.y });
+                game[obfuscate.input][obfuscate.mousePosition].x = window.gameVars.Input.Mouse.AimPos.x;
+                game[obfuscate.input][obfuscate.mousePosition].y = window.gameVars.Input.Mouse.AimPos.y;
+		
+		//Activate AutoFollow when distance between player and enemy is less than 3.
+                if(getDistance(target.pos, curPlayer.pos) < 3){
+                    
+	 	    //Pull out melee.
+		    if(!game[obfuscate.input].keys["90"]) {
+                        setTimeout(function() {
+                            game[obfuscate.input].keys["90"] = true;
+                                setTimeout(function() {
+                                    delete game[obfuscate.input].keys["90"]
+                                }, 50);
+                            }, 0);
+                        }
+			
+		    //Movement logic
+                    if(target.pos.x - curPlayer.pos.x > 0){
+                        cancelA()
+                        D()
+                    }
+
+                    else if(target.pos.x - curPlayer.pos.x < 0){
+                        cancelD()
+                        A()
+                    }
+
+                    if(target.pos.y - curPlayer.pos.y > 0){
+                        cancelS()
+                        W()
+                    }
+
+                    else if(target.pos.y - curPlayer.pos.y < 0){
+                        cancelW()
+                        S()
+                    }
+                }
+            }
+
+	    //If Aimbot bind is pressed, don't aim.
+            else if (window.gameVars.Input.Cheat.AutoAimPressed == true) {
+                window.gameVars.Input.Mouse.AimActive = false;
+            }
+        }
+
+	//SpinBot: If not aiming and spinning is active, spin repeatedly in the positions specified.
+        else if (window.gameVars.Input.Mouse.SpinActive) {
+            window.gameVars.Input.Mouse.AimActive = false;
+	
+	    //Cancels from using mouse.
+            if (game[obfuscate.input].mouseButton) {
+                window.gameVars.Input.Mouse.SpinActive = false
+                return;
+            }
+
+	    //Spinning position is the cosine and sine of the angle in radians. Based off of the unit circle.
+            window.gameVars.Input.Mouse.SpinPos = game[obfuscate.camera].pointToScreen({
+                // x: spinListX[number],
+                // y: spinListY[number]
+                x: ((Math.cos((number * (Math.PI / 180)))) * 1000000),
+                y: ((Math.sin((number * (Math.PI / 180)))) * 1000000)
+            })
+
+	    //Override mouse position.
+            game[obfuscate.input][obfuscate.mousePosition].x = window.gameVars.Input.Mouse.SpinPos.x;
+            game[obfuscate.input][obfuscate.mousePosition].y = window.gameVars.Input.Mouse.SpinPos.y;
+
+	    //Sweet angle
+            number += 119
+        }
+    }
+    )();
+
+    //Update lines and names to all enemies.
+    updateEnemyLines()
+    all.forEach(updateNames);
+
+    // Bump fire: Spams mouse button when it is held down, allowing you to punch the fastest.
+    window.gameVars.Input.Cheat.RepeatFire = window.menu.UserSetting.shoot.bumpFireEnabled && game[obfuscate.input].mouseButton
+    
+    // Auto loot: F is the loot key, spam it every 90 milliseconds.    
+    var pressF = function () {
+     if(!game[obfuscate.input].keys["70"]) {
+         setTimeout(function() {
+             game[obfuscate.input].keys["70"] = true;
+             setTimeout(function() {
+                 delete game[obfuscate.input].keys["70"]
+             }, 90);
+         }, 0);
+     }
+    }
+	
+   //Call our F button spammer if we need to loot.
+    if(needToLoot()) {
+     pressF();
+    }
 }
