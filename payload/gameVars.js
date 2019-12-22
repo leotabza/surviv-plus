@@ -7,6 +7,7 @@ window.gameVars.Game = {
 	BulletBarn: null,
 	GunBarn: null,
 	GunTypes: null,
+	Perks: null,
 	Enimies: [],
 	Target: null,
 	LastTimeDropItem: 0.0,
@@ -21,11 +22,19 @@ window.gameVars.Game = {
 		draw: null,
 		points: null,
 	},
+	EnemyCircle: {
+		draw: null,
+		points: {
+			x: null,
+			y: null,
+		},
+	},
+
 	model: null,
 	updateTeamTab: false,
 };
 
-window.gameVars.ZoomLevel = 1;
+window.gameVars.ZoomLevel = 1.1
 window.gameVars.Menu = false;
 window.gameVars.Language = "en";
 
@@ -47,6 +56,7 @@ window.gameVars.Perfomance = {
 window.gameVars.Input = {
 	Cheat: {
 		AutoAimPressed: false,
+		// PotatoAimPressed: false,
 		SwitchWeaponFirst: false,
 		StreamerMode: false,
 		SpinPressed: false,
@@ -56,9 +66,9 @@ window.gameVars.Input = {
 		RepeatInteraction: false,
 		ZoomDelta: 0,
 		GetZoomDelta: function () {
-			var delta = window.gameVars.Input.Cheat.ZoomDelta;
+			var delta = Math.sign(window.gameVars.Input.Cheat.ZoomDelta)
 			window.gameVars.Input.Cheat.ZoomDelta = 0;
-			return delta;
+			return delta
 		},
 	},
 	GlobalHookCallback: null,
@@ -77,6 +87,11 @@ window.gameVars.Input = {
 		// RightMouseButton: false,
 		SpinActive: false,
 		SpinPos: {
+			x: 0.0,
+			y: 0.0
+		},
+		PotatoAimActive: true,
+		PotatoAimPos: {
 			x: 0.0,
 			y: 0.0
 		}
