@@ -2,7 +2,7 @@ window.gameFunctions = window.gameFunctions || {};
 window.gameFunctions.gameInit = function(){
 	window.gameVars.Game.GameActive = true;
 	window.gameVars.Game.Instance = this;
-	
+	window.gameVars.Input.Cheat.ZoomDelta = 0;
 	if(!window.gameVars.Textures.targetTexture)
 		window.gameVars.Textures.targetTexture = window.PIXI.Texture.fromImage("img/gui/ping-team-coming.svg");
 	
