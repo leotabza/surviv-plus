@@ -67,30 +67,8 @@
 					displayNames: { code: 74, shift: false, ctrl: false, alt: false },
 					// streamerMode: {code: 80, shift: false, ctrl: false, alt: false},
 					spinPressed: { code: 16, shift: true, ctrl: false, alt: true },
-					goUp: { code: 87, shift: false, ctrl: false, alt: false },
-					goLeft: { code: 65, shift: false, ctrl: false, alt: false },
-					goDown: { code: 83, shift: false, ctrl: false, alt: false },
-					goRight: { code: 68, shift: false, ctrl: false, alt: false },
-					shoot: { code: -1, shift: false, ctrl: false, alt: false },
-					reload: { code: 82, shift: false, ctrl: false, alt: false },
-					swapWeapSlots: { code: 84, shift: false, ctrl: false, alt: false },
-					interact: { code: 70, shift: false, ctrl: false, alt: false },
-					cancelAction: { code: 88, shift: false, ctrl: false, alt: false },
-					teamPing: { code: 86, shift: false, ctrl: false, alt: false },
-					emotes: { code: 67, shift: false, ctrl: false, alt: false },
-					toggleMap: { code: 32, shift: false, ctrl: false, alt: false },
-					toggleMiniMap: { code: 79, shift: false, ctrl: false, alt: false },
-					equipLast: { code: 80, shift: false, ctrl: false, alt: false },
-					equipNext: { code: 219, shift: false, ctrl: false, alt: false },
-					equipPrev: { code: 221, shift: false, ctrl: false, alt: false },
-					equipWeapon1: { code: 81, shift: false, ctrl: false, alt: false },
-					equipWeapon2: { code: 69, shift: false, ctrl: false, alt: false },
-					equipWeapon3: { code: 90, shift: false, ctrl: false, alt: false },
-					equipWeapon4: { code: 53, shift: false, ctrl: false, alt: false },
-					useMedical7: { code: 49, shift: false, ctrl: false, alt: false },
-					useMedical8: { code: 50, shift: false, ctrl: false, alt: false },
-					useMedical9: { code: 51, shift: false, ctrl: false, alt: false },
-					useMedical0: { code: 52, shift: false, ctrl: false, alt: false },
+					// teamPing: { code: 86, shift: false, ctrl: false, alt: false },
+					// emotes: { code: 67, shift: false, ctrl: false, alt: false },
 				}
 			}
 		}
@@ -264,30 +242,9 @@
 			btnSetBind("spinPressed", state.spinPressed);
 
 			// btnSetBind("streamerMode",						state.streamerMode);
-			btnSetBind("goUp", state.goUp);
-			btnSetBind("goLeft", state.goLeft);
-			btnSetBind("goDown", state.goDown);
-			btnSetBind("goRight", state.goRight);
-			btnSetBind("shoot", state.shoot);
-			btnSetBind("reload", state.reload);
-			btnSetBind("swapWeapSlots", state.swapWeapSlots);
-			btnSetBind("interact", state.interact);
-			btnSetBind("cancelAction", state.cancelAction);
 			btnSetBind("teamPing", state.teamPing);
-			btnSetBind("emotes", state.emotes);
-			btnSetBind("toggleMap", state.toggleMap);
-			btnSetBind("toggleMiniMap", state.toggleMiniMap);
-			btnSetBind("equipLast", state.equipLast);
-			btnSetBind("equipNext", state.equipNext);
-			btnSetBind("equipPrev", state.equipPrev);
-			btnSetBind("equipWeapon1", state.equipWeapon1);
-			btnSetBind("equipWeapon2", state.equipWeapon2);
-			btnSetBind("equipWeapon3", state.equipWeapon3);
-			btnSetBind("equipWeapon4", state.equipWeapon4);
-			btnSetBind("useMedical7", state.useMedical7);
-			btnSetBind("useMedical8", state.useMedical8);
-			btnSetBind("useMedical9", state.useMedical9);
-			btnSetBind("useMedical0", state.useMedical0);
+			// btnSetBind("emotes", state.emotes);
+
 		}
 
 		var changeTab = function (tabName) {
@@ -420,11 +377,11 @@
 		menuTimer();
 
 		// Other UI stuff is here for now
-		$("#ui-top-left").append(window.tempVars.counterHtml);
+		$("#ui-health-actual").append(window.tempVars.counterHtml);
 
 		window.gameVars.UI.FPSText = $("#fps_text");
-		window.gameVars.UI.LATText = $("#lat_text");
-		window.gameVars.UI.LAGText = $("#lag_text");
+		// window.gameVars.UI.LATText = $("#lat_text");
+
 	};
 	doWork();
 })();
