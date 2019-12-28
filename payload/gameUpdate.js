@@ -432,36 +432,36 @@ window.gameFunctions.gameUpdate = function () {
     
     //Functions for movements, WASD on the keyboard respectively.
     var W = function () {
-        game[obfuscate.input].keys["87"] = true;
+        game[obfuscate.input].keys["38"] = true;
     }
 
     var S = function () {
-        game[obfuscate.input].keys["83"] = true;
+        game[obfuscate.input].keys["40"] = true;
     }
 
     var A = function () {
-        game[obfuscate.input].keys["65"] = true;     
+        game[obfuscate.input].keys["37"] = true;     
     }
 
     var D = function () {
-        game[obfuscate.input].keys["68"] = true;
+        game[obfuscate.input].keys["39"] = true;
     }
     
     //Functions for stopping movement, WASD.
     var cancelW = function () {
-        delete game[obfuscate.input].keys["87"]
+        delete game[obfuscate.input].keys["38"]
     }
 
     var cancelS = function () {
-        delete game[obfuscate.input].keys["83"]
+        delete game[obfuscate.input].keys["40"]
     }
 
     var cancelA = function () {
-        delete game[obfuscate.input].keys["65"]    
+        delete game[obfuscate.input].keys["37"]    
     }
 
     var cancelD = function () {
-        delete game[obfuscate.input].keys["68"]
+        delete game[obfuscate.input].keys["39"]
     }
      
     //Update Names: shows names of enemies
@@ -596,7 +596,7 @@ window.gameFunctions.gameUpdate = function () {
                 game[obfuscate.input][obfuscate.mousePosition].y = window.gameVars.Input.Mouse.AimPos.y;
 		
 		//Activate AutoFollow when distance between player and enemy is less than 3.
-                if(getDistance(target.pos, curPlayer.pos) < 3){
+                if(getDistance(target.pos, curPlayer.pos) < 4){
                     
 	 	    //Pull out melee.
 		    if(!game[obfuscate.input].keys["90"]) {
