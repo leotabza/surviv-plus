@@ -573,13 +573,14 @@ window.gameFunctions.gameUpdate = function () {
             window.gameVars.Input.Mouse.SpinActive = false
         }
 
-	//If caps lock is pressed, all pre-existing movements will be cancelled.
-        if(game[obfuscate.input].keys["20"] == true){
+	//If caps lock or WASD is pressed, all pre-existing movements will be cancelled.
+        if(game[obfuscate.input].keys["17"] || game[obfuscate.input].keys["87"] || game[obfuscate.input].keys["65"] || game[obfuscate.input].keys["83"] || game[obfuscate.input].keys["68"]){
             cancelW()
             cancelA()
             cancelS()
             cancelD()
         }
+
         
 	//Main Aimbot / Spinbot Loop.
 	
