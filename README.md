@@ -29,8 +29,8 @@ Attention: This project is for educational purposes only, do not install if you 
 
 Your contributions are always welcome. If you see something that should be improved or a feature added, feel free to fork this repo and create a PR. 
 
-## 👋 Final Words from DavidsCoding (Owner)
+## 👋 Final Words from DavidsCoding
 
-Big thanks to [reuke](https://github.com/reuke), he started everything and created an amazing foundation for me to learn from. Thanks to [Kalaborative](https://github.com/Kalaborative), he helped me learn the ropes even more and helped maintain it when reuke left. This project was very fun to work on, because I got to apply my ideas in a game, while self learning the JS language. 
+Big thanks to [reuke](https://github.com/reuke), he started everything and created an amazing foundation for me to learn from. Thanks to [Kalaborative](https://github.com/Kalaborative), he helped me learn the ropes even more and helped maintain it when reuke left. Although time consuming, this project was very fun to work on, because I got to apply my ideas in a game, while self learning the JS language. 
 
 Anyway, this will be end of development and will be the final copy. This project will be maintained when the game is updated, but other than that, my work here is done.
